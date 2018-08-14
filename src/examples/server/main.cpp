@@ -1,12 +1,11 @@
 #define ASIO_STANDALONE 1
 #define ASIO_HEADER_ONLY 1
 
-#include <iostream>
 
-#include <functional>
-#include <asio.hpp>
 #include "asio/dtls.hpp"
-#include "asio/ssl/error.hpp"
+#include <asio.hpp>
+#include <functional>
+#include <iostream>
 
 bool generateCookie(std::string &cookie, const asio::ip::udp::endpoint& ep)
 {

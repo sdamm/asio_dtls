@@ -40,7 +40,7 @@ std::size_t datagram_io(
   std::size_t bytes_transferred = 0;
   do switch (op(core.engine_, ec, bytes_transferred))
   {
-  case ssl::detail::engine::want_input_and_retry:
+  case engine::want_input_and_retry:
 
     // If the input buffer is empty then we need to read some more data from
     // the underlying transport.
@@ -54,7 +54,7 @@ std::size_t datagram_io(
     // Try the operation again.
     continue;
 
-  case ssl::detail::engine::want_output_and_retry:
+  case engine::want_output_and_retry:
 
     // Get output data from the engine and write it to the underlying
     // transport.
@@ -63,7 +63,7 @@ std::size_t datagram_io(
     // Try the operation again.
     continue;
 
-  case ssl::detail::engine::want_output:
+  case engine::want_output:
 
     // Get output data from the engine and write it to the underlying
     // transport.

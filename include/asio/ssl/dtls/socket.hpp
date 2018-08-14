@@ -29,7 +29,7 @@
 #include "asio/ssl/dtls/detail/handshake_op.hpp"
 #include "asio/ssl/dtls/detail/datagram_io.hpp"
 #include "asio/ssl/dtls/detail/read_op.hpp"
-#include "asio/ssl/detail/shutdown_op.hpp"
+#include "asio/ssl/dtls/detail/shutdown_op.hpp"
 #include "asio/ssl/dtls/detail/core.hpp"
 #include "asio/ssl/dtls/detail/engine.hpp"
 #include "asio/ssl/dtls/detail/write_op.hpp"
@@ -758,7 +758,7 @@ public:
     ssl::dtls::detail::datagram_io(
       dtls::detail::datagram_receive<next_layer_type>(this->next_layer_),
       dtls::detail::datagram_send<next_layer_type>(this->next_layer_, 0),
-      core_, ssl::detail::shutdown_op(),
+      core_, detail::shutdown_op(),
       ec);
     ASIO_SYNC_OP_VOID_RETURN(ec);
   }
@@ -791,7 +791,7 @@ public:
       dtls::detail::async_datagram_receive<next_layer_type>(this->next_layer_),
       dtls::detail::async_datagram_send<next_layer_type>(this->next_layer_, 0),
       core_,
-      ssl::detail::shutdown_op(),
+      detail::shutdown_op(),
       init.completion_handler);
 
     return init.result.get();

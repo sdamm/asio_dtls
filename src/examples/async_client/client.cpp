@@ -9,6 +9,7 @@ Client::Client(asio::io_service& service,
                asio::ip::udp::endpoint& ep)
     : m_ctx(ctx)
     , m_dtls_con(service, ctx)
+    , m_recbuffer()
 {
     m_dtls_con.lowest_layer().connect(ep); // auch Async möglich
 

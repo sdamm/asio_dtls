@@ -1,5 +1,5 @@
 //
-// ssl/detail/buffered_handshake_op.hpp
+// ssl/dtls/detail/buffered_handshake_op.hpp
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
 // Copyright (c) 2003-2017 Christopher M. Kohlhoff (chris at kohlhoff dot com)
@@ -17,7 +17,7 @@
 
 #include "asio/detail/config.hpp"
 
-#include "asio/ssl/detail/engine.hpp"
+#include "asio/ssl/dtls/detail/engine.hpp"
 
 #include "asio/detail/push_options.hpp"
 

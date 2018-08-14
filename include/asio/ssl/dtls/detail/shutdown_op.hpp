@@ -1,15 +1,15 @@
 //
-// ssl/dtls/detail/handshake_op.hpp
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// ssl/dtls/detail/shutdown_op.hpp
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
-// Copyright (c) 2003-2016 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Copyright (c) 2003-2017 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef ASIO_SSL_DTLS_DETAIL_LISTEN_OP_HPP
-#define ASIO_SSL_DTLS_DETAIL_LISTEN_OP_HPP
+#ifndef ASIO_SSL_DTLS_DETAIL_SHUTDOWN_OP_HPP
+#define ASIO_SSL_DTLS_DETAIL_SHUTDOWN_OP_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 # pragma once
@@ -26,32 +26,15 @@ namespace ssl {
 namespace dtls {
 namespace detail {
 
-class dtls_listen_op
+class shutdown_op
 {
 public:
-  dtls_listen_op()
-  {
-  }
-
-  ssl::dtls::detail::engine::want operator()(engine& eng,
+  engine::want operator()(engine& eng,
       asio::error_code& ec,
       std::size_t& bytes_transferred) const
   {
     bytes_transferred = 0;
-    ssl::dtls::detail::engine::want result = eng.dtls_listen(ec);
-
-    if(result == ssl::dtls::detail::engine::want_output_and_retry)
-    {
-      result = ssl::dtls::detail::engine::want_output;
-    }
-
-    if(result == ssl::dtls::detail::engine::want_output)
-    {
-      // This is not what we transfered, but allows to indicate a wrong cookie
-      bytes_transferred = 0;
-    }
-
-    return result;
+    return eng.shutdown(ec);
   }
 
   template <typename Handler>
@@ -61,7 +44,6 @@ public:
   {
     handler(ec);
   }
-
 };
 
 } // namespace detail
@@ -71,4 +53,4 @@ public:
 
 #include "asio/detail/pop_options.hpp"
 
-#endif // ASIO_SSL_DTLS_DETAIL_LISTEN_OP_HPP
+#endif // ASIO_SSL_DTLS_DETAIL_SHUTDOWN_OP_HPP

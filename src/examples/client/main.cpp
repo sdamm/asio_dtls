@@ -3,6 +3,7 @@
 #include <asio/dtls.hpp>
 #include <asio/ip/udp.hpp>
 
+#include <array>
 #include <iostream>
 
 
@@ -40,10 +41,10 @@ int main()
         char buffer[] = "Hello world!";
         dtls_con.send(asio::const_buffers_1(buffer, sizeof(buffer)));
 
-        char recbuffer[200];
-        dtls_con.receive(asio::mutable_buffers_1(recbuffer, 200));
+        std::array<char, 200> recbuffer{};
+        dtls_con.receive(asio::buffer(recbuffer));
 
-        cout << "Received: " << recbuffer << std::endl;
+        cout << "Received: " << recbuffer.data() << std::endl;
     }
     catch(std::exception &e)
     {

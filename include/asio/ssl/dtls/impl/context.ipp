@@ -1,5 +1,5 @@
 //
-// ssl/impl/context.ipp
+// ssl/dtls/impl/context.ipp
 // ~~~~~~~~~~~~~~~~~~~~
 //
 // Copyright (c) 2005 Voipster / Indrek dot Juhani at voipster dot com
