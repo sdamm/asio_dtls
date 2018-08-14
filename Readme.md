@@ -13,3 +13,7 @@ against the Server side (see https://tools.ietf.org/html/rfc4347#section-4.2.1).
 * OpenSSL > 1.0.2 or
 * OpenSSL > 1.1.0 for correct dtls\_listen support
 * cmake >= 3.2
+
+## Work in Progress
+This library is not finished and parts of the Code are copies from Files of ASIO.
+The structure and some of the files might still change.
