@@ -8,8 +8,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef ASIO_SSL_DETAIL_COOKIE_GENERATE_CALLBACK_HPP
-#define ASIO_SSL_DETAIL_COOKIE_GENERATE_CALLBACK_HPP
+#ifndef ASIO_SSL_DTLS_DETAIL_COOKIE_GENERATE_CALLBACK_HPP
+#define ASIO_SSL_DTLS_DETAIL_COOKIE_GENERATE_CALLBACK_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 # pragma once
@@ -70,4 +70,4 @@ private:
 
 #include "asio/detail/pop_options.hpp"
 
-#endif // ASIO_SSL_DETAIL_COOKIE_GENERATE_CALLBACK_HPP
+#endif // ASIO_SSL_DTLS_DETAIL_COOKIE_GENERATE_CALLBACK_HPP
