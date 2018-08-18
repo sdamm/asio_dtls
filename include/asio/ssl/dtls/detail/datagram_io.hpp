@@ -8,8 +8,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef ASIO_SSL_DETAIL_DATAGRAM_IO_HPP
-#define ASIO_SSL_DETAIL_DATAGRAM_IO_HPP
+#ifndef ASIO_SSL_DTLS_DETAIL_DATAGRAM_IO_HPP
+#define ASIO_SSL_DTLS_DETAIL_DATAGRAM_IO_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 # pragma once
@@ -385,4 +385,4 @@ struct associated_executor<
 
 #include "asio/detail/pop_options.hpp"
 
-#endif // ASIO_SSL_DETAIL_DATAGRAM_IO_HPP
+#endif // ASIO_SSL_DTLS_DETAIL_DATAGRAM_IO_HPP
