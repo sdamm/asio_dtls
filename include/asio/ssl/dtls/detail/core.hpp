@@ -1,5 +1,5 @@
 //
-// ssl/dtls/detail/dtls_core.hpp
+// ssl/dtls/detail/core.hpp
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
 // Copyright (c) 2003-2017 Christopher M. Kohlhoff (chris at kohlhoff dot com)
@@ -8,8 +8,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef ASIO_SSL_DTLS_DETAIL_STREAM_CORE_HPP
-#define ASIO_SSL_DTLS_DETAIL_STREAM_CORE_HPP
+#ifndef ASIO_SSL_DTLS_DETAIL_CORE_HPP
+#define ASIO_SSL_DTLS_DETAIL_CORE_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 # pragma once
@@ -133,4 +133,4 @@ struct core
 
 #include "asio/detail/pop_options.hpp"
 
-#endif // ASIO_SSL_DTLS_DETAIL_STREAM_CORE_HPP
+#endif // ASIO_SSL_DTLS_DETAIL_CORE_HPP
