@@ -6,6 +6,7 @@
 #include "asio/io_service.hpp"
 #include "asio/basic_socket.hpp"
 #include "asio/basic_io_object.hpp"
+#include "asio/ssl/dtls/socket.hpp"
 #include "asio/detail/memory.hpp"
 #include "asio/ssl/dtls/detail/cookie_generate_callback.hpp"
 #include "asio/ssl/dtls/detail/cookie_verify_callback.hpp"
