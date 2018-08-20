@@ -38,6 +38,7 @@ set(ASIO_DTLS_PUBLIC_HEADERS
     asio/ssl/dtls/acceptor.hpp
     asio/ssl/dtls/context.hpp
     asio/ssl/dtls/default_cookie_generator.hpp
+    asio/ssl/dtls/socket.hpp
     )
 
 option(asio_build_dtls_static "Use asio and asio_dtls header only" OFF)
