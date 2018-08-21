@@ -6,9 +6,6 @@
 #include <array>
 #include <iostream>
 
-
-using namespace std;
-
 /* Certificate validation works exactly the same as with SSL Streams.
  */
 int callback(bool preverified, asio::ssl::verify_context &ctx)
@@ -24,7 +21,7 @@ int main()
     asio::io_context service;
     asio::ssl::dtls::context ctx(asio::ssl::dtls::context::dtls_client);
 
-    cout << "Hello World client" << std::endl;
+    std::cout << "Hello World client" << std::endl;
 
     ctx.set_verify_callback(callback);
 
@@ -44,7 +41,7 @@ int main()
         std::array<char, 200> recbuffer{};
         dtls_con.receive(asio::buffer(recbuffer));
 
-        cout << "Received: " << recbuffer.data() << std::endl;
+        std::cout << "Received: " << recbuffer.data() << std::endl;
     }
     catch(std::exception &e)
     {
