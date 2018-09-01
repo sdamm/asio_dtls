@@ -141,16 +141,16 @@ public:
     socket_.async_receive(buffer, message_flags(),
                           ASIO_MOVE_CAST(CallBack)(cb));
 
-    auto timeoutcallback = std::bind(&async_datagram_receive_timeout::timeout, this);
-
-    timer_.async_wait(timeoutcallback);
+    SocketType &socket = socket_;
+    timer_.async_wait([&socket](const asio::error_code &ec)
+    {
+        if(!ec)
+        {
+            socket.close();
+        }
+    });
 
     timer_.expires_after(*timeout_);
-  }
-
-  void timeout() const
-  {
-      socket_.close();
   }
 
 private:
