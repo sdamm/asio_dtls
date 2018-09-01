@@ -28,6 +28,8 @@ class handler_base
 {
 public:
   virtual void operator()(const asio::error_code &ec) = 0;
+
+  virtual ~handler_base() = default;
 };
 
 }
@@ -53,16 +55,6 @@ public:
     asio::socket_base::reuse_address option(true);
     sock_.set_option(option);
   }
-
-  acceptor(asio::io_service &serv, asio::ssl::context &ctx)
-    : service_(serv)
-    , sock_(serv)
-    , remoteEndPoint_()
-    , cookie_generate_callback_(nullptr)
-    , cookie_verify_callback_(nullptr)
-  {
-  }
-
 
   /// Open the acceptor using the specified protocol.
   /**
@@ -786,10 +778,6 @@ private:
       }
       else
       {
-        uint8_t *data = new uint8_t[size];
-        memcpy(data, buffer_.data(), size);
-
-
         asio::error_code ec;
         if (sock_.verify_cookie(acceptor_.sock_,
                             buffer_,
