@@ -41,17 +41,17 @@ set(ASIO_DTLS_PUBLIC_HEADERS
     asio/ssl/dtls/socket.hpp
     )
 
-option(asio_build_dtls_static "Use asio and asio_dtls header only" OFF)
+option(asio_build_dtls_static "Build asio_dtls as static library" OFF)
 if(asio_build_dtls_static)
-  add_library(asio_dtls_static STATIC)
-  target_include_directories(asio_dtls ${CMAKE_CURRENT_SOURCE_DIR}/include)
+  add_library(asio_dtls_static STATIC ${asio_dtls_sources})
+  target_include_directories(asio_dtls_static PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
   target_link_libraries(asio_dtls_static OpenSSL::SSL OpenSSL::Crypto Threads::Threads)
 endif(asio_build_dtls_static)
 
-option(asio_build_dtls_shared "Use asio and asio_dtls header only" OFF)
+option(asio_build_dtls_shared "Build asio_dtls as shared library" OFF)
 if(asio_build_dtls_shared)
-  add_library(asio_dtls_shared )
-  target_include_directories(asio_dtls ${CMAKE_CURRENT_SOURCE_DIR}/include)
+  add_library(asio_dtls_shared SHARED ${asio_dtls_sources})
+  target_include_directories(asio_dtls_shared ${CMAKE_CURRENT_SOURCE_DIR}/include)
   target_link_libraries(asio_dtls_shared OpenSSL::SSL OpenSSL::Crypto Threads::Threads)
 endif(asio_build_dtls_shared)
 
