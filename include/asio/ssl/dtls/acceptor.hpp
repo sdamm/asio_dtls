@@ -764,7 +764,7 @@ private:
                                   socket<DatagramSocketType>& sock,
                                   asio::mutable_buffer buffer)
       : acceptor_(acc)
-      , ah_(ah)
+      , ah_(std::move(ah))
       , sock_(sock)
       , buffer_(buffer)
     {
