@@ -13,6 +13,7 @@
 #include "asio/ssl/error.hpp"
 #include "asio/error_code.hpp"
 #include "asio/ssl/dtls/context.hpp"
+#include "asio/executor_work_guard.hpp"
 
 
 namespace asio {
@@ -750,6 +751,7 @@ private:
       , ah_(std::move(ah))
       , sock_(sock)
       , buffer_(buffer)
+      , work_(acc.sock_.get_executor())
     {
     }
 
@@ -797,6 +799,7 @@ private:
     AcceptHandler ah_;
     socket<DatagramSocketType> &sock_;
     asio::mutable_buffer buffer_;
+    asio::executor_work_guard<decltype(std::declval<DatagramSocketType&>().get_executor())> work_;
   };
 
 
