@@ -784,6 +784,14 @@ private:
       }
     }
 
+    using executor_type = asio::associated_executor_t<
+        AcceptHandler, decltype(std::declval<DatagramSocketType&>().get_executor())>;
+
+    executor_type get_executor() const noexcept
+    {
+        return (asio::get_associated_executor)(ah_, sock_.get_executor());
+    }
+
   private:
     acceptor<DatagramSocketType> &acceptor_;
     AcceptHandler ah_;
