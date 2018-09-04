@@ -22,18 +22,6 @@ namespace dtls {
 template <typename DatagramSocketType>
 class acceptor;
 
-namespace detail {
-
-class handler_base
-{
-public:
-  virtual void operator()(const asio::error_code &ec) = 0;
-
-  virtual ~handler_base() = default;
-};
-
-}
-
 template <typename DatagramSocketType>
 class acceptor
 {
