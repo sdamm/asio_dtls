@@ -42,6 +42,8 @@ public:
         : m_acceptor(serv, ep)
         , ctx_(ctx)
     {
+        m_acceptor.set_option(asio::socket_base::reuse_address(true));
+
         m_acceptor.set_cookie_generate_callback(generateCookie);
         m_acceptor.set_cookie_verify_callback(verifyCookie);
 

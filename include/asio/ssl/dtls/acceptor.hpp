@@ -40,8 +40,6 @@ public:
     , cookie_verify_callback_(nullptr)
   {
     sock_.open(ep.protocol());
-    asio::socket_base::reuse_address option(true);
-    sock_.set_option(option);
   }
 
   /// Open the acceptor using the specified protocol.
@@ -247,7 +245,7 @@ public:
   void set_option(const SettableSocketOption& option)
   {
     asio::error_code ec;
-    this->get_service().set_option(this->get_implementation(), option, ec);
+    sock_.set_option(option, ec);
     asio::detail::throw_error(ec, "set_option");
   }
 
@@ -281,7 +279,7 @@ public:
   ASIO_SYNC_OP_VOID set_option(const SettableSocketOption& option,
                                asio::error_code& ec)
   {
-    this->get_service().set_option(this->get_implementation(), option, ec);
+    sock_.set_option(option, ec);
     ASIO_SYNC_OP_VOID_RETURN(ec);
   }
 
