@@ -624,13 +624,10 @@ public:
    * acceptor.accept(socket);
    * @endcode
    */
-#if defined(ASIO_ENABLE_OLD_SERVICES)
-  template <typename Protocol1, typename SocketService>
-  void accept(basic_socket<Protocol1, SocketService>& peer,
-              typename enable_if<is_convertible<Protocol, Protocol1>::value>::type* = 0)
-#else // defined(ASIO_ENABLE_OLD_SERVICES)
-  void accept(socket<DatagramSocketType>& peer)
-#endif // defined(ASIO_ENABLE_OLD_SERVICES)
+  template<typename MutableBuffer>
+  void accept(socket<DatagramSocketType>& peer,
+              const MutableBuffer& buffer
+              )
   {
     asio::error_code ec;
     this->get_service().accept(this->get_implementation(),
