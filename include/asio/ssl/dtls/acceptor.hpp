@@ -720,7 +720,7 @@ public:
 
     sock_.async_receive_from(buffer,
                             remoteEndPoint_,
-    dtls_acceptor_callback_helper<MoveAcceptHandler>(*this, init.completion_handler, sock, buffer));
+    dtls_acceptor_callback_helper<ASIO_HANDLER_TYPE(MoveAcceptHandler,void(const asio::error_code&, size_t))>(*this, init.completion_handler, sock, buffer));
 
     return init.result.get();
   }
