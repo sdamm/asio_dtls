@@ -61,7 +61,7 @@ public:
   void open(const protocol_type& protocol = protocol_type())
   {
     asio::error_code ec;
-    sock_.open(this->get_implementation(), protocol, ec);
+    sock_.open(protocol, ec);
     asio::detail::throw_error(ec, "open");
   }
 
@@ -88,7 +88,7 @@ public:
   ASIO_SYNC_OP_VOID open(const protocol_type& protocol,
                          asio::error_code& ec)
   {
-    sock_.open(this->get_implementation(), protocol, ec);
+    sock_.open(protocol, ec);
     ASIO_SYNC_OP_VOID_RETURN(ec);
   }
 
@@ -160,7 +160,7 @@ public:
   void close()
   {
     asio::error_code ec;
-    this->get_service().close(this->get_implementation(), ec);
+    sock_.close(ec);
     asio::detail::throw_error(ec, "close");
   }
 
@@ -188,7 +188,7 @@ public:
    */
   ASIO_SYNC_OP_VOID close(asio::error_code& ec)
   {
-    this->get_service().close(this->get_implementation(), ec);
+    sock_.close(ec);
     ASIO_SYNC_OP_VOID_RETURN(ec);
   }
 
@@ -203,7 +203,7 @@ public:
   void cancel()
   {
     asio::error_code ec;
-    this->get_service().cancel(this->get_implementation(), ec);
+    sock_.cancel(ec);
     asio::detail::throw_error(ec, "cancel");
   }
 
@@ -217,7 +217,7 @@ public:
    */
   ASIO_SYNC_OP_VOID cancel(asio::error_code& ec)
   {
-    this->get_service().cancel(this->get_implementation(), ec);
+    sock_.cancel(ec);
     ASIO_SYNC_OP_VOID_RETURN(ec);
   }
 
@@ -310,7 +310,7 @@ public:
   void get_option(GettableSocketOption& option)
   {
     asio::error_code ec;
-    this->get_service().get_option(this->get_implementation(), option, ec);
+    sock_.get_option(option, ec);
     asio::detail::throw_error(ec, "get_option");
   }
 
@@ -345,7 +345,7 @@ public:
   ASIO_SYNC_OP_VOID get_option(GettableSocketOption& option,
                                asio::error_code& ec)
   {
-    this->get_service().get_option(this->get_implementation(), option, ec);
+    sock_.get_option(option, ec);
     ASIO_SYNC_OP_VOID_RETURN(ec);
   }
 
@@ -398,7 +398,7 @@ public:
   void io_control(IoControlCommand& command)
   {
     asio::error_code ec;
-    this->get_service().io_control(this->get_implementation(), command, ec);
+    sock_.io_control(command, ec);
     asio::detail::throw_error(ec, "io_control");
   }
 
@@ -431,7 +431,7 @@ public:
   ASIO_SYNC_OP_VOID io_control(IoControlCommand& command,
                                asio::error_code& ec)
   {
-    this->get_service().io_control(this->get_implementation(), command, ec);
+    sock_.io_control(command, ec);
     ASIO_SYNC_OP_VOID_RETURN(ec);
   }
 
@@ -448,7 +448,7 @@ public:
    */
   bool non_blocking() const
   {
-    return this->get_service().non_blocking(this->get_implementation());
+    return sock_.non_blocking();
   }
 
   /// Sets the non-blocking mode of the acceptor.
@@ -467,7 +467,7 @@ public:
   void non_blocking(bool mode)
   {
     asio::error_code ec;
-    this->get_service().non_blocking(this->get_implementation(), mode, ec);
+    sock_.non_blocking(mode, ec);
     asio::detail::throw_error(ec, "non_blocking");
   }
 
@@ -487,7 +487,7 @@ public:
   ASIO_SYNC_OP_VOID non_blocking(
       bool mode, asio::error_code& ec)
   {
-    this->get_service().non_blocking(this->get_implementation(), mode, ec);
+    sock_.non_blocking(mode, ec);
     ASIO_SYNC_OP_VOID_RETURN(ec);
   }
 
@@ -507,7 +507,7 @@ public:
    */
   bool native_non_blocking() const
   {
-    return this->get_service().native_non_blocking(this->get_implementation());
+    return sock_.native_non_blocking();
   }
 
   /// Sets the non-blocking mode of the native acceptor implementation.
@@ -528,8 +528,7 @@ public:
   void native_non_blocking(bool mode)
   {
     asio::error_code ec;
-    this->get_service().native_non_blocking(
-          this->get_implementation(), mode, ec);
+    sock_.native_non_blocking(mode, ec);
     asio::detail::throw_error(ec, "native_non_blocking");
   }
 
@@ -551,8 +550,7 @@ public:
   ASIO_SYNC_OP_VOID native_non_blocking(
       bool mode, asio::error_code& ec)
   {
-    this->get_service().native_non_blocking(
-          this->get_implementation(), mode, ec);
+    sock_.native_non_blocking(mode, ec);
     ASIO_SYNC_OP_VOID_RETURN(ec);
   }
 
@@ -573,11 +571,7 @@ public:
    */
   endpoint_type local_endpoint() const
   {
-    asio::error_code ec;
-    endpoint_type ep = this->get_service().local_endpoint(
-                         this->get_implementation(), ec);
-    asio::detail::throw_error(ec, "local_endpoint");
-    return ep;
+    return sock_.local_endpoint();
   }
 
   /// Get the local endpoint of the acceptor.
@@ -604,7 +598,7 @@ public:
    */
   endpoint_type local_endpoint(asio::error_code& ec) const
   {
-    return this->get_service().local_endpoint(this->get_implementation(), ec);
+    return sock_.local_endpoint(ec);
   }
 
   /// Accept a new connection.
@@ -627,12 +621,17 @@ public:
    */
   template<typename MutableBuffer>
   void accept(socket<DatagramSocketType>& peer,
-              const MutableBuffer& buffer
-              )
+              const MutableBuffer& buffer)
   {
     asio::error_code ec;
-    this->get_service().accept(this->get_implementation(),
-                               peer, static_cast<endpoint_type*>(0), ec);
+    endpoint_type ep;
+
+    do
+    {
+        sock_.receive_from(buffer, ep);
+    }
+    while(!ec && peer.verify_cookie(sock_, buffer, ec, ep));
+
     asio::detail::throw_error(ec, "accept");
   }
 
