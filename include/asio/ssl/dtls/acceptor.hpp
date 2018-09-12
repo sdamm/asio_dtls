@@ -677,19 +677,19 @@ public:
    * acceptor.async_accept(io_context2, accept_handler);
    * @endcode
    */
-  template <typename MoveAcceptHandler, typename MutableBuffer>
-  ASIO_INITFN_RESULT_TYPE(MoveAcceptHandler,
+  template <typename AcceptHandler, typename MutableBuffer>
+  ASIO_INITFN_RESULT_TYPE(AcceptHandler,
                           void (asio::error_code, DatagramSocketType))
   async_accept(socket<DatagramSocketType> &sock,
                const MutableBuffer& buffer,
-               ASIO_MOVE_ARG(MoveAcceptHandler) handler,
+               ASIO_MOVE_ARG(AcceptHandler) handler,
                asio::error_code &ec)
   {
     // If you get an error on the following line it means that your handler does
     // not meet the documented type requirements for a ReceiveHandler.
-    ASIO_READ_HANDLER_CHECK(MoveAcceptHandler, handler) type_check;
+    ASIO_READ_HANDLER_CHECK(AcceptHandler, handler) type_check;
 
-    async_completion<MoveAcceptHandler,
+    async_completion<AcceptHandler,
         void (asio::error_code,
               size_t)> init(handler);
 
@@ -720,7 +720,9 @@ public:
 
     sock_.async_receive_from(buffer,
                             remoteEndPoint_,
-    dtls_acceptor_callback_helper<ASIO_HANDLER_TYPE(MoveAcceptHandler,void(const asio::error_code&, size_t))>(*this, init.completion_handler, sock, buffer));
+    dtls_acceptor_callback_helper<
+      ASIO_HANDLER_TYPE(AcceptHandler,void(const asio::error_code&, size_t))>
+        (*this, std::move(init.completion_handler), sock, buffer));
 
     return init.result.get();
   }
@@ -744,11 +746,11 @@ private:
   {
   public:
     dtls_acceptor_callback_helper(acceptor<DatagramSocketType> &acc,
-                                  AcceptHandler& ah,
+                                  AcceptHandler&& ah,
                                   socket<DatagramSocketType>& sock,
                                   asio::mutable_buffer buffer)
       : acceptor_(acc)
-      , ah_(std::move(ah))
+      , ah_(std::forward<AcceptHandler>(ah))
       , sock_(sock)
       , buffer_(buffer)
       , work_(acc.sock_.get_executor())
@@ -786,8 +788,8 @@ private:
       }
     }
 
-    using executor_type = asio::associated_executor_t<
-        AcceptHandler, decltype(std::declval<DatagramSocketType&>().get_executor())>;
+    using executor_type = asio::associated_executor_t<AcceptHandler,
+      decltype(std::declval<DatagramSocketType&>().get_executor())>;
 
     executor_type get_executor() const noexcept
     {
@@ -799,7 +801,8 @@ private:
     AcceptHandler ah_;
     socket<DatagramSocketType> &sock_;
     asio::mutable_buffer buffer_;
-    asio::executor_work_guard<decltype(std::declval<DatagramSocketType&>().get_executor())> work_;
+    asio::executor_work_guard<
+      decltype(std::declval<DatagramSocketType&>().get_executor())> work_;
   };
 
 
