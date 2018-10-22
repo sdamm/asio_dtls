@@ -13,6 +13,7 @@
 #include "asio/ssl/error.hpp"
 #include "asio/error_code.hpp"
 #include "asio/ssl/dtls/context.hpp"
+#include "asio/executor_work_guard.hpp"
 
 
 namespace asio {
@@ -719,7 +720,7 @@ public:
 
     sock_.async_receive_from(buffer,
                             remoteEndPoint_,
-    dtls_acceptor_callback_helper<MoveAcceptHandler>(*this, init.completion_handler, sock, buffer));
+    dtls_acceptor_callback_helper<ASIO_HANDLER_TYPE(MoveAcceptHandler,void(const asio::error_code&, size_t))>(*this, init.completion_handler, sock, buffer));
 
     return init.result.get();
   }
@@ -750,6 +751,7 @@ private:
       , ah_(std::move(ah))
       , sock_(sock)
       , buffer_(buffer)
+      , work_(acc.sock_.get_executor())
     {
     }
 
@@ -784,11 +786,20 @@ private:
       }
     }
 
+    using executor_type = asio::associated_executor_t<
+        AcceptHandler, decltype(std::declval<DatagramSocketType&>().get_executor())>;
+
+    executor_type get_executor() const noexcept
+    {
+        return (asio::get_associated_executor)(ah_, sock_.get_executor());
+    }
+
   private:
     acceptor<DatagramSocketType> &acceptor_;
     AcceptHandler ah_;
     socket<DatagramSocketType> &sock_;
     asio::mutable_buffer buffer_;
+    asio::executor_work_guard<decltype(std::declval<DatagramSocketType&>().get_executor())> work_;
   };
 
 
