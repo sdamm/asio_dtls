@@ -45,7 +45,6 @@
 namespace asio {
 namespace ssl  {
 namespace dtls {
-
 /// Provides Datagram-oriented functionality using SSL.
 /**
  * The dtls class template provides asynchronous and blocking stream-oriented

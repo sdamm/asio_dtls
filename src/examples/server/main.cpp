@@ -120,11 +120,12 @@ private:
         }
     }
 
-    void encrypted_data_sent(const asio::error_code &ec, dtls_sock_ptr)
+    void encrypted_data_sent(const asio::error_code &ec, dtls_sock_ptr socket)
     {
         if(!ec)
         {
             std::cout << "Data sent, closing connection." << std::endl;
+            socket->async_shutdown([socket](const asio::error_code&){});
         }
     }
 
