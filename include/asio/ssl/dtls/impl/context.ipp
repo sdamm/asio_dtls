@@ -953,6 +953,34 @@ int context::password_callback_function(
   return 0;
 }
 
+
+ASIO_SYNC_OP_VOID context::do_set_psk_client_callback(
+    ssl::detail::psk_client_callback_base* callback, asio::error_code& ec)
+{
+  SSL_CTX_set_cipher_list(handle_, "PSK");
+  static ssl::detail::psk_client_callback_base* cb = callback;
+
+  SSL_CTX_set_psk_client_callback(handle_, [](SSL *ssl, const char *hint, char *identity, unsigned int max_identity_len, unsigned char *psk, unsigned int max_psk_len) -> unsigned int {
+        if ( cb ) { cb->call(ssl, hint, identity, max_identity_len, psk, max_psk_len); return cb->result(); } return 0; });
+
+  ec = asio::error_code();
+  ASIO_SYNC_OP_VOID_RETURN(ec);
+}
+
+ASIO_SYNC_OP_VOID context::do_set_psk_server_callback(
+    ssl::detail::psk_server_callback_base* callback, asio::error_code& ec)
+{
+  SSL_CTX_set_cipher_list(handle_, "PSK");
+  static ssl::detail::psk_server_callback_base* cb = callback;
+
+  SSL_CTX_set_psk_server_callback(handle_, [](SSL *ssl, const char *identity, unsigned char *psk, unsigned int max_psk_len) -> unsigned int {
+        if ( cb) { cb->call(ssl, identity, psk, max_psk_len); return cb->result(); } return 0; });
+
+  ec = asio::error_code();
+  ASIO_SYNC_OP_VOID_RETURN(ec);
+}
+
+
 BIO* context::make_buffer_bio(const const_buffer& b)
 {
   return ::BIO_new_mem_buf(

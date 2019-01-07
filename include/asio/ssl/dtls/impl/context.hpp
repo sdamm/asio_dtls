@@ -60,6 +60,43 @@ ASIO_SYNC_OP_VOID context::set_password_callback(
   ASIO_SYNC_OP_VOID_RETURN(ec);
 }
 
+template <typename PskClientCallback>
+void context::set_psk_client_callback(PskClientCallback callback)
+{
+  asio::error_code ec;
+  this->set_psk_client_callback(callback, ec);
+  asio::detail::throw_error(ec, "set_psk_client_callback");
+}
+
+template <typename PskClientCallback>
+ASIO_SYNC_OP_VOID context::set_psk_client_callback(
+    PskClientCallback callback, asio::error_code& ec)
+{
+  do_set_psk_client_callback(
+      new detail::psk_client_callback<PskClientCallback>(callback), ec);
+  ASIO_SYNC_OP_VOID_RETURN(ec);
+}
+
+/*
+template <typename PskServerCallback>
+ASIO_SYNC_OP_VOID void context::set_psk_server_callback(PskServerCallback callback)
+{
+  asio::error_code ec;
+  this->set_psk_server_callback(callback, ec);
+  asio::detail::throw_error(ec, "set_psk_server_callback");
+}
+
+template <typename PskServerCallback>
+ASIO_SYNC_OP_VOID context::set_psk_server_callback(
+    PskServerCallback callback, asio::error_code& ec)
+{
+  do_set_psk_server_callback(
+      new detail::psk_server_callback<PskServerCallback>(callback), ec);
+  ASIO_SYNC_OP_VOID_RETURN(ec);
+}
+*/
+
+
 } // namespace dtls
 } // namespace ssl
 } // namespace asio
