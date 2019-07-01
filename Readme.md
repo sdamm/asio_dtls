@@ -69,7 +69,7 @@ does not. A `dtls_context` does not allow stream based methods like `tlsv12_serv
 
 
 ## Dependencies
-* Asio (tested with 1.12.0)
+* Asio (tested with 1.13.0)
 * OpenSSL > 1.0.2 or
 * OpenSSL > 1.1.0 for correct dtls\_listen support
 * cmake >= 3.2
