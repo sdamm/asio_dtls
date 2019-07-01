@@ -2,7 +2,7 @@
 // ssl/dtls/detail/datagram_io.hpp
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
-// Copyright (c) 2003-2016 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Copyright (c) 2003-2019 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -37,6 +37,7 @@ std::size_t datagram_io(
     const Operation& op,
     asio::error_code& ec)
 {
+  asio::error_code io_ec;
   std::size_t bytes_transferred = 0;
   do switch (op(core.engine_, ec, bytes_transferred))
   {
@@ -45,8 +46,12 @@ std::size_t datagram_io(
     // If the input buffer is empty then we need to read some more data from
     // the underlying transport.
     if (core.input_.size() == 0)
+    {
       core.input_ = asio::buffer(core.input_buffer_,
-          receive(core.input_buffer_, ec));
+          receive(core.input_buffer_, io_ec));
+      if (!ec)
+        ec = io_ec;
+    }
 
     // Pass the new input data to the engine.
     core.input_ = core.engine_.put_input(core.input_);
@@ -58,7 +63,9 @@ std::size_t datagram_io(
 
     // Get output data from the engine and write it to the underlying
     // transport.
-    send(core.engine_.get_output(core.output_buffer_), ec);
+    send(core.engine_.get_output(core.output_buffer_), io_ec);
+    if (!ec)
+      ec = io_ec;
 
     // Try the operation again.
     continue;

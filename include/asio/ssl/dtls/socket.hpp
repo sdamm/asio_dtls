@@ -2,7 +2,7 @@
 // ssl/dtls/dtls_socket.hpp
 // ~~~~~~~~~~~~~~~~~~~~~~~~
 //
-// Copyright (c) 2003-2017
+// Copyright (c) 2003-2019
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -20,6 +20,7 @@
 #include "asio/async_result.hpp"
 #include "asio/detail/buffer_sequence_adapter.hpp"
 #include "asio/detail/handler_type_requirements.hpp"
+#include "asio/detail/non_const_lvalue.hpp"
 #include "asio/detail/noncopyable.hpp"
 #include "asio/detail/type_traits.hpp"
 #include "asio/ssl/context.hpp"
@@ -59,9 +60,9 @@ namespace dtls {
  * @par Example
  * To use the SSL dtls template with an ip::udp::socket, you would write:
  * @code
- * asio::io_context io_context;
+ * asio::io_context my_context;
  * asio::ssl::context ctx(asio::ssl::context::dtlsv12);
- * asio::ssl::stream<asio:ip::udp::socket> sock(io_context, ctx);
+ * asio::ssl::stream<asio:ip::udp::socket> sock(my_context, ctx);
  * @endcode
  */
 template <typename datagram_socket>
@@ -97,7 +98,7 @@ public:
   socket(Arg&& arg, context& ctx)
     : next_layer_(ASIO_MOVE_CAST(Arg)(arg)),
       core_(ctx.native_handle(),
-          next_layer_.lowest_layer().get_executor().context())
+          next_layer_.lowest_layer().get_executor())
   {
     // set mtu to safe value to prevent dtls-fragmentation of the handshake
     set_mtu(1500);
@@ -108,7 +109,7 @@ public:
   socket(Arg& arg, context& ctx)
     : next_layer_(arg),
       core_(ctx.native_handle(),
-          next_layer_.lowest_layer().get_executor().context())
+          next_layer_.lowest_layer().get_executor())
   {
     // set mtu to safe value to prevent dtls-fragmentation of the handshake
     set_mtu(1500);
@@ -137,22 +138,6 @@ public:
     return next_layer_.lowest_layer().get_executor();
   }
 
-#if !defined(ASIO_NO_DEPRECATED)
-  /// (Deprecated: Use get_executor().) Get the io_context associated with the
-  /// object.
-  asio::io_context& get_io_context()
-  {
-    return next_layer_.lowest_layer().get_io_context();
-  }
-
-  /// (Deprecated: Use get_executor().) Get the io_context associated with the
-  /// object.
-  asio::io_context& get_io_service()
-  {
-    return next_layer_.lowest_layer().get_io_service();
-  }
-#endif // !defined(ASIO_NO_DEPRECATED)
-
   /// Get the underlying implementation in the native type.
   /**
    * This function may be used to obtain the underlying implementation of the
@@ -164,7 +149,7 @@ public:
    * suitable for passing to functions such as @c SSL_get_verify_result and
    * @c SSL_get_peer_certificate:
    * @code
-   * asio::ssl::stream<asio:ip::tcp::socket> sock(io_context, ctx);
+   * asio::ssl::stream<asio:ip::tcp::socket> sock(my_context, ctx);
    *
    * // ... establish connection and perform handshake ...
    *
@@ -666,22 +651,9 @@ public:
   async_handshake(handshake_type type,
       ASIO_MOVE_ARG(HandshakeHandler) handler)
   {
-    // If you get an error on the following line it means that your handler does
-    // not meet the documented type requirements for a HandshakeHandler.
-    ASIO_HANDSHAKE_HANDLER_CHECK(HandshakeHandler, handler) type_check;
-
-    asio::async_completion<HandshakeHandler,
-      void (asio::error_code)> init(handler);
-
-    remote_endpoint_tmp_ = next_layer().remote_endpoint();
-
-    ssl::dtls::detail::async_datagram_io(
-          dtls::detail::async_datagram_receive_timeout<next_layer_type>(next_layer_),
-          dtls::detail::async_datagram_send<next_layer_type>(next_layer_),
-          core_,
-          detail::handshake_op(type), init.completion_handler);
-
-    return init.result.get();
+      return async_initiate<HandshakeHandler,
+        void (asio::error_code)>(
+          initiate_async_handshake(), handler, this, type);
   }
 
   /// Start an asynchronous SSL handshake.
@@ -711,24 +683,9 @@ public:
   async_handshake(handshake_type type, const ConstBufferSequence& buffers,
       ASIO_MOVE_ARG(BufferedHandshakeHandler) handler)
   {
-    // If you get an error on the following line it means that your handler does
-    // not meet the documented type requirements for a BufferedHandshakeHandler.
-    ASIO_BUFFERED_HANDSHAKE_HANDLER_CHECK(
-        BufferedHandshakeHandler, handler) type_check;
-
-    remote_endpoint_tmp_ = next_layer().remote_endpoint();
-
-    asio::async_completion<BufferedHandshakeHandler,
-      void (asio::error_code, std::size_t)> init(handler);
-
-    ssl::dtls::detail::async_datagram_io(
-        dtls::detail::async_datagram_receive_timeout<next_layer_type>(next_layer_),
-        dtls::detail::async_datagram_send<next_layer_type>(next_layer_),
-        core_,
-        detail::buffered_handshake_op<ConstBufferSequence>(type, buffers),
-        init.completion_handler);
-
-    return init.result.get();
+      return async_initiate<BufferedHandshakeHandler,
+        void (asio::error_code, std::size_t)>(
+          initiate_async_buffered_handshake(), handler, this, type, buffers);
   }
 
   /// Shut down SSL on the stream.
@@ -779,21 +736,9 @@ public:
       void (asio::error_code))
   async_shutdown(ASIO_MOVE_ARG(ShutdownHandler) handler)
   {
-    // If you get an error on the following line it means that your handler does
-    // not meet the documented type requirements for a ShutdownHandler.
-    ASIO_SHUTDOWN_HANDLER_CHECK(ShutdownHandler, handler) type_check;
-
-    asio::async_completion<ShutdownHandler,
-      void (asio::error_code)> init(handler);
-
-    ssl::dtls::detail::async_datagram_io(
-      dtls::detail::async_datagram_receive<next_layer_type>(this->next_layer_),
-      dtls::detail::async_datagram_send<next_layer_type>(this->next_layer_, 0),
-      core_,
-      detail::shutdown_op(),
-      init.completion_handler);
-
-    return init.result.get();
+      return async_initiate<ShutdownHandler,
+        void (asio::error_code)>(
+          initiate_async_shutdown(), handler, this);
   }
 
   /// Send data on the dtls connection.
@@ -874,21 +819,9 @@ public:
   async_send(const ConstBufferSequence& buffers,
              ASIO_MOVE_ARG(WriteHandler) handler)
   {
-    // If you get an error on the following line it means that your handler does
-    // not meet the documented type requirements for a WriteHandler.
-    ASIO_WRITE_HANDLER_CHECK(WriteHandler, handler) type_check;
-
-    asio::async_completion<WriteHandler,
-      void (asio::error_code, std::size_t)> init(handler);
-
-    ssl::dtls::detail::async_datagram_io(
-        detail::async_datagram_receive<next_layer_type>(next_layer_),
-        detail::async_datagram_send<next_layer_type>(next_layer_),
-        core_,
-        detail::write_op<ConstBufferSequence>(buffers),
-        init.completion_handler);
-
-    return init.result.get();
+      return async_initiate<WriteHandler,
+        void (asio::error_code, std::size_t)>(
+          initiate_async_send(), handler, this, buffers);
   }
 
   /// Receive some data from the socket.
@@ -973,23 +906,112 @@ public:
   async_receive(const MutableBufferSequence& buffers,
       ASIO_MOVE_ARG(ReadHandler) handler)
   {
-    // If you get an error on the following line it means that your handler does
-    // not meet the documented type requirements for a ReadHandler.
-    ASIO_READ_HANDLER_CHECK(ReadHandler, handler) type_check;
-
-    asio::async_completion<ReadHandler,
-      void (asio::error_code, std::size_t)> init(handler);
-
-    ssl::dtls::detail::async_datagram_io(
-        dtls::detail::async_datagram_receive<next_layer_type>(next_layer_),
-        dtls::detail::async_datagram_send<next_layer_type>(next_layer_, 0),
-        core_,
-        detail::read_op<MutableBufferSequence>(buffers),
-        init.completion_handler);
-
-    return init.result.get();
+    return async_initiate<ReadHandler,
+      void (asio::error_code, std::size_t)>(
+        initiate_async_receive(), handler, this, buffers);
   }
-private:
+  struct initiate_async_handshake
+  {
+    template <typename HandshakeHandler>
+    void operator()(ASIO_MOVE_ARG(HandshakeHandler) handler,
+        socket* self, handshake_type type) const
+    {
+      // If you get an error on the following line it means that your handler
+      // does not meet the documented type requirements for a HandshakeHandler.
+      ASIO_HANDSHAKE_HANDLER_CHECK(HandshakeHandler, handler) type_check;
+
+      asio::detail::non_const_lvalue<HandshakeHandler> handler2(handler);
+      ssl::dtls::detail::async_datagram_io(
+                  dtls::detail::async_datagram_receive_timeout<next_layer_type>(self->next_layer_),
+                  dtls::detail::async_datagram_send<next_layer_type>(self->next_layer_, 0),
+                  self->core_,
+                  dtls::detail::handshake_op(type),
+                  handler2.value
+                  );
+    }
+  };
+
+  struct initiate_async_buffered_handshake
+  {
+    template <typename BufferedHandshakeHandler, typename ConstBufferSequence>
+    void operator()(ASIO_MOVE_ARG(BufferedHandshakeHandler) handler,
+        socket* self, handshake_type type,
+        const ConstBufferSequence& buffers) const
+    {
+      // If you get an error on the following line it means that your
+      // handler does not meet the documented type requirements for a
+      // BufferedHandshakeHandler.
+      ASIO_BUFFERED_HANDSHAKE_HANDLER_CHECK(
+          BufferedHandshakeHandler, handler) type_check;
+
+      asio::detail::non_const_lvalue<
+          BufferedHandshakeHandler> handler2(handler);
+      ssl::dtls::detail::async_datagram_io(
+        dtls::detail::async_datagram_receive_timeout<next_layer_type>(self->next_layer_),
+        dtls::detail::async_datagram_send<next_layer_type>(self->next_layer_, 0),
+        self->core_,
+        dtls::detail::buffered_handshake_op<ConstBufferSequence>(type, buffers),
+        handler2.value);
+    }
+  };
+
+  struct initiate_async_shutdown
+  {
+    template <typename ShutdownHandler>
+    void operator()(ASIO_MOVE_ARG(ShutdownHandler) handler,
+        socket* self) const
+    {
+      // If you get an error on the following line it means that your handler
+      // does not meet the documented type requirements for a ShutdownHandler.
+      ASIO_HANDSHAKE_HANDLER_CHECK(ShutdownHandler, handler) type_check;
+
+      asio::detail::non_const_lvalue<ShutdownHandler> handler2(handler);
+      ssl::dtls::detail::async_datagram_io(
+        dtls::detail::async_datagram_receive_timeout<next_layer_type>(self->next_layer_),
+        dtls::detail::async_datagram_send<next_layer_type>(self->next_layer_),
+        self->core_,
+        detail::shutdown_op(), handler2.value);
+    }
+  };
+
+  struct initiate_async_send
+  {
+    template <typename WriteHandler, typename ConstBufferSequence>
+    void operator()(ASIO_MOVE_ARG(WriteHandler) handler,
+        socket* self, const ConstBufferSequence& buffers) const
+    {
+      // If you get an error on the following line it means that your handler
+      // does not meet the documented type requirements for a WriteHandler.
+      ASIO_WRITE_HANDLER_CHECK(WriteHandler, handler) type_check;
+
+      asio::detail::non_const_lvalue<WriteHandler> handler2(handler);
+      dtls::detail::async_datagram_io(
+          dtls::detail::async_datagram_receive<next_layer_type>(self->next_layer_),
+          dtls::detail::async_datagram_send<next_layer_type>(self->next_layer_),
+          self->core_,
+          detail::write_op<ConstBufferSequence>(buffers), handler2.value);
+    }
+  };
+
+  struct initiate_async_receive
+  {
+    template <typename ReadHandler, typename MutableBufferSequence>
+    void operator()(ASIO_MOVE_ARG(ReadHandler) handler,
+        socket* self, const MutableBufferSequence& buffers) const
+    {
+      // If you get an error on the following line it means that your handler
+      // does not meet the documented type requirements for a ReadHandler.
+      ASIO_READ_HANDLER_CHECK(ReadHandler, handler) type_check;
+
+      asio::detail::non_const_lvalue<ReadHandler> handler2(handler);
+      dtls::detail::async_datagram_io(
+          dtls::detail::async_datagram_receive<next_layer_type>(self->next_layer_),
+          dtls::detail::async_datagram_send<next_layer_type>(self->next_layer_),
+          self->core_,
+          detail::read_op<MutableBufferSequence>(buffers), handler2.value);
+    }
+  };
+
   typedef typename asio::remove_reference<
     datagram_socket>::type::endpoint_type endpoint_type;
 

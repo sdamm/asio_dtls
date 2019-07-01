@@ -18,8 +18,6 @@ void socket()
 
     asio::ssl::dtls::socket<asio::ip::udp::socket> dtls_socket(ctx, dtls_ctx);
     dtls_socket.get_executor();
-    dtls_socket.get_io_context();
-    dtls_socket.get_io_service();
 
     dtls_socket.handshake(asio::ssl::stream_base::client);
     dtls_socket.handshake(asio::ssl::stream_base::client, ec);

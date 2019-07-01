@@ -121,7 +121,7 @@ public:
 
   async_datagram_receive_timeout(SocketType& socket)
     : socket_(socket)
-    , timer_(socket.get_io_context())
+    , timer_(socket.get_executor())
     , timeout_(new asio::steady_timer::duration(chrono::seconds(1)))
   {
     timer_.expires_after(asio::steady_timer::duration::max());
@@ -129,7 +129,7 @@ public:
 
   async_datagram_receive_timeout(const async_datagram_receive_timeout& other)
       : socket_(other.socket_)
-      , timer_(socket_.get_io_context())
+      , timer_(socket_.get_executor())
       , timeout_(other.timeout_)
   {
       timer_.expires_after(asio::steady_timer::duration::max());
