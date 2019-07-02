@@ -6,9 +6,19 @@
 #ifndef ASIO_SSL_DETAIL_SSL_APP_DATA_HPP
 #define ASIO_SSL_DETAIL_SSL_APP_DATA_HPP
 
+#ifdef ASIO_DTLS_USE_BOOST
+#include <boost/asio/ssl/detail/verify_callback.hpp>
+#include "asio/ssl/dtls/detail/cookie_generate_callback.hpp"
+#include "asio/ssl/dtls/detail/cookie_verify_callback.hpp"
+#else  // ASIO_DTLS_USE_BOOST
 #include "asio/ssl/detail/verify_callback.hpp"
 #include "asio/ssl/dtls/detail/cookie_generate_callback.hpp"
 #include "asio/ssl/dtls/detail/cookie_verify_callback.hpp"
+#endif // ASIO_DTLS_USE_BOOST
+
+#ifdef ASIO_DTLS_USE_BOOST
+namespace boost {
+#endif // ASIO_DTLS_USE_BOOST
 
 namespace asio {
 namespace ssl {
@@ -113,5 +123,9 @@ private:
 } // namespace dtls
 } // namespace ssl
 } // namespace asio
+
+#if ASIO_DTLS_USE_BOOST
+} // namespace boost
+#endif // ASIO_DTLS_USE_BOOST
 
 #endif // ASIO_SSL_DTLS_DETAIL_SSL_APP_DATA_HPP

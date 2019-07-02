@@ -15,9 +15,29 @@
 # pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#ifdef ASIO_DTLS_USE_BOOST
+#include <boost/asio/detail/config.hpp>
+#else
 #include "asio/detail/config.hpp"
+#endif
 
 #include <string>
+
+#ifdef ASIO_DTLS_USE_BOOST
+#include "detail/macro_helper.hpp"
+#include "error_code.hpp"
+#include <boost/asio/buffer.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ssl/context_base.hpp>
+#include <boost/asio/ssl/detail/openssl_types.hpp>
+#include <boost/asio/ssl/detail/openssl_init.hpp>
+#include <boost/asio/ssl/detail/password_callback.hpp>
+#include <boost/asio/ssl/detail/verify_callback.hpp>
+#include <boost/asio/ssl/verify_mode.hpp>
+
+#include <boost/asio/detail/push_options.hpp>
+#else //ASIO_DTLS_USE_BOOST
+#include "detail/macro_helper.hpp"
 #include "asio/buffer.hpp"
 #include "asio/io_context.hpp"
 #include "asio/ssl/context_base.hpp"
@@ -28,6 +48,11 @@
 #include "asio/ssl/verify_mode.hpp"
 
 #include "asio/detail/push_options.hpp"
+#endif // ASIO_DTLS_USE_BOOST
+
+#if ASIO_DTLS_USE_BOOST
+namespace boost {
+#endif // ASIO_DTLS_USE_BOOST
 
 namespace asio {
 namespace ssl {
@@ -71,10 +96,10 @@ public:
     dtls_client
   };
 
-  ASIO_STATIC_CONSTANT(long, cookie_exchange = SSL_OP_COOKIE_EXCHANGE);
+  ASIO_DTLS_STATIC_CONSTANT(long, cookie_exchange = SSL_OP_COOKIE_EXCHANGE);
 
   /// Constructor.
-  ASIO_DECL explicit context(dtls_method m);
+  ASIO_DTLS_DECL explicit context(dtls_method m);
 
 #if defined(ASIO_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
   /// Move-construct a context from another.
@@ -88,7 +113,7 @@ public:
    * @li Destruction.
    * @li As a target for move-assignment.
    */
-  ASIO_DECL context(context&& other);
+  ASIO_DTLS_DECL context(context&& other);
 
   /// Move-assign a context from another.
   /**
@@ -101,11 +126,11 @@ public:
    * @li Destruction.
    * @li As a target for move-assignment.
    */
-  ASIO_DECL context& operator=(context&& other);
+  ASIO_DTLS_DECL context& operator=(context&& other);
 #endif // defined(ASIO_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
 
   /// Destructor.
-  ASIO_DECL ~context();
+  ASIO_DTLS_DECL ~context();
 
   /// Get the underlying implementation in the native type.
   /**
@@ -113,7 +138,7 @@ public:
    * context. This is intended to allow access to context functionality that is
    * not otherwise provided.
    */
-  ASIO_DECL native_handle_type native_handle();
+  ASIO_DTLS_DECL native_handle_type native_handle();
 
   /// Clear options on the context.
   /**
@@ -127,7 +152,7 @@ public:
    *
    * @note Calls @c SSL_CTX_clear_options.
    */
-  ASIO_DECL void clear_options(options o);
+  ASIO_DTLS_DECL void clear_options(options o);
 
   /// Clear options on the context.
   /**
@@ -141,7 +166,7 @@ public:
    *
    * @note Calls @c SSL_CTX_clear_options.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID clear_options(options o,
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID clear_options(options o,
       asio::error_code& ec);
 
   /// Set options on the context.
@@ -156,7 +181,7 @@ public:
    *
    * @note Calls @c SSL_CTX_set_options.
    */
-  ASIO_DECL void set_options(options o);
+  ASIO_DTLS_DECL void set_options(options o);
 
   /// Set options on the context.
   /**
@@ -170,7 +195,7 @@ public:
    *
    * @note Calls @c SSL_CTX_set_options.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID set_options(options o,
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID set_options(options o,
       asio::error_code& ec);
 
   /// Set the peer verification mode.
@@ -185,7 +210,7 @@ public:
    *
    * @note Calls @c SSL_CTX_set_verify.
    */
-  ASIO_DECL void set_verify_mode(verify_mode v);
+  ASIO_DTLS_DECL void set_verify_mode(verify_mode v);
 
   /// Set the peer verification mode.
   /**
@@ -199,7 +224,7 @@ public:
    *
    * @note Calls @c SSL_CTX_set_verify.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID set_verify_mode(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID set_verify_mode(
       verify_mode v, asio::error_code& ec);
 
   /// Set the peer verification depth.
@@ -214,7 +239,7 @@ public:
    *
    * @note Calls @c SSL_CTX_set_verify_depth.
    */
-  ASIO_DECL void set_verify_depth(int depth);
+  ASIO_DTLS_DECL void set_verify_depth(int depth);
 
   /// Set the peer verification depth.
   /**
@@ -228,7 +253,7 @@ public:
    *
    * @note Calls @c SSL_CTX_set_verify_depth.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID set_verify_depth(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID set_verify_depth(
       int depth, asio::error_code& ec);
 
   /// Set the callback used to verify peer certificates.
@@ -271,7 +296,7 @@ public:
    * @note Calls @c SSL_CTX_set_verify.
    */
   template <typename VerifyCallback>
-  ASIO_SYNC_OP_VOID set_verify_callback(VerifyCallback callback,
+  ASIO_DTLS_SYNC_OP_VOID set_verify_callback(VerifyCallback callback,
       asio::error_code& ec);
 
   /// Load a certification authority file for performing verification.
@@ -286,7 +311,7 @@ public:
    *
    * @note Calls @c SSL_CTX_load_verify_locations.
    */
-  ASIO_DECL void load_verify_file(const std::string& filename);
+  ASIO_DTLS_DECL void load_verify_file(const std::string& filename);
 
   /// Load a certification authority file for performing verification.
   /**
@@ -300,7 +325,7 @@ public:
    *
    * @note Calls @c SSL_CTX_load_verify_locations.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID load_verify_file(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID load_verify_file(
       const std::string& filename, asio::error_code& ec);
 
   /// Add certification authority for performing verification.
@@ -315,7 +340,7 @@ public:
    *
    * @note Calls @c SSL_CTX_get_cert_store and @c X509_STORE_add_cert.
    */
-  ASIO_DECL void add_certificate_authority(const const_buffer& ca);
+  ASIO_DTLS_DECL void add_certificate_authority(const const_buffer& ca);
 
   /// Add certification authority for performing verification.
   /**
@@ -329,7 +354,7 @@ public:
    *
    * @note Calls @c SSL_CTX_get_cert_store and @c X509_STORE_add_cert.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID add_certificate_authority(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID add_certificate_authority(
       const const_buffer& ca, asio::error_code& ec);
 
   /// Configures the context to use the default directories for finding
@@ -343,7 +368,7 @@ public:
    *
    * @note Calls @c SSL_CTX_set_default_verify_paths.
    */
-  ASIO_DECL void set_default_verify_paths();
+  ASIO_DTLS_DECL void set_default_verify_paths();
 
   /// Configures the context to use the default directories for finding
   /// certification authority certificates.
@@ -356,7 +381,7 @@ public:
    *
    * @note Calls @c SSL_CTX_set_default_verify_paths.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID set_default_verify_paths(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID set_default_verify_paths(
       asio::error_code& ec);
 
   /// Add a directory containing certificate authority files to be used for
@@ -373,7 +398,7 @@ public:
    *
    * @note Calls @c SSL_CTX_load_verify_locations.
    */
-  ASIO_DECL void add_verify_path(const std::string& path);
+  ASIO_DTLS_DECL void add_verify_path(const std::string& path);
 
   /// Add a directory containing certificate authority files to be used for
   /// performing verification.
@@ -389,7 +414,7 @@ public:
    *
    * @note Calls @c SSL_CTX_load_verify_locations.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID add_verify_path(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID add_verify_path(
       const std::string& path, asio::error_code& ec);
 
   /// Use a certificate from a memory buffer.
@@ -404,7 +429,7 @@ public:
    *
    * @note Calls @c SSL_CTX_use_certificate or SSL_CTX_use_certificate_ASN1.
    */
-  ASIO_DECL void use_certificate(
+  ASIO_DTLS_DECL void use_certificate(
       const const_buffer& certificate, file_format format);
 
   /// Use a certificate from a memory buffer.
@@ -419,7 +444,7 @@ public:
    *
    * @note Calls @c SSL_CTX_use_certificate or SSL_CTX_use_certificate_ASN1.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID use_certificate(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID use_certificate(
       const const_buffer& certificate, file_format format,
       asio::error_code& ec);
 
@@ -435,7 +460,7 @@ public:
    *
    * @note Calls @c SSL_CTX_use_certificate_file.
    */
-  ASIO_DECL void use_certificate_file(
+  ASIO_DTLS_DECL void use_certificate_file(
       const std::string& filename, file_format format);
 
   /// Use a certificate from a file.
@@ -450,7 +475,7 @@ public:
    *
    * @note Calls @c SSL_CTX_use_certificate_file.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID use_certificate_file(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID use_certificate_file(
       const std::string& filename, file_format format,
       asio::error_code& ec);
 
@@ -466,7 +491,7 @@ public:
    *
    * @note Calls @c SSL_CTX_use_certificate and SSL_CTX_add_extra_chain_cert.
    */
-  ASIO_DECL void use_certificate_chain(const const_buffer& chain);
+  ASIO_DTLS_DECL void use_certificate_chain(const const_buffer& chain);
 
   /// Use a certificate chain from a memory buffer.
   /**
@@ -480,7 +505,7 @@ public:
    *
    * @note Calls @c SSL_CTX_use_certificate and SSL_CTX_add_extra_chain_cert.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID use_certificate_chain(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID use_certificate_chain(
       const const_buffer& chain, asio::error_code& ec);
 
   /// Use a certificate chain from a file.
@@ -495,7 +520,7 @@ public:
    *
    * @note Calls @c SSL_CTX_use_certificate_chain_file.
    */
-  ASIO_DECL void use_certificate_chain_file(const std::string& filename);
+  ASIO_DTLS_DECL void use_certificate_chain_file(const std::string& filename);
 
   /// Use a certificate chain from a file.
   /**
@@ -509,7 +534,7 @@ public:
    *
    * @note Calls @c SSL_CTX_use_certificate_chain_file.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID use_certificate_chain_file(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID use_certificate_chain_file(
       const std::string& filename, asio::error_code& ec);
 
   /// Use a private key from a memory buffer.
@@ -524,7 +549,7 @@ public:
    *
    * @note Calls @c SSL_CTX_use_PrivateKey or SSL_CTX_use_PrivateKey_ASN1.
    */
-  ASIO_DECL void use_private_key(
+  ASIO_DTLS_DECL void use_private_key(
       const const_buffer& private_key, file_format format);
 
   /// Use a private key from a memory buffer.
@@ -539,7 +564,7 @@ public:
    *
    * @note Calls @c SSL_CTX_use_PrivateKey or SSL_CTX_use_PrivateKey_ASN1.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID use_private_key(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID use_private_key(
       const const_buffer& private_key, file_format format,
       asio::error_code& ec);
 
@@ -555,7 +580,7 @@ public:
    *
    * @note Calls @c SSL_CTX_use_PrivateKey_file.
    */
-  ASIO_DECL void use_private_key_file(
+  ASIO_DTLS_DECL void use_private_key_file(
       const std::string& filename, file_format format);
 
   /// Use a private key from a file.
@@ -570,7 +595,7 @@ public:
    *
    * @note Calls @c SSL_CTX_use_PrivateKey_file.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID use_private_key_file(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID use_private_key_file(
       const std::string& filename, file_format format,
       asio::error_code& ec);
 
@@ -587,7 +612,7 @@ public:
    *
    * @note Calls @c SSL_CTX_use_RSAPrivateKey or SSL_CTX_use_RSAPrivateKey_ASN1.
    */
-  ASIO_DECL void use_rsa_private_key(
+  ASIO_DTLS_DECL void use_rsa_private_key(
       const const_buffer& private_key, file_format format);
 
   /// Use an RSA private key from a memory buffer.
@@ -603,7 +628,7 @@ public:
    *
    * @note Calls @c SSL_CTX_use_RSAPrivateKey or SSL_CTX_use_RSAPrivateKey_ASN1.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID use_rsa_private_key(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID use_rsa_private_key(
       const const_buffer& private_key, file_format format,
       asio::error_code& ec);
 
@@ -620,7 +645,7 @@ public:
    *
    * @note Calls @c SSL_CTX_use_RSAPrivateKey_file.
    */
-  ASIO_DECL void use_rsa_private_key_file(
+  ASIO_DTLS_DECL void use_rsa_private_key_file(
       const std::string& filename, file_format format);
 
   /// Use an RSA private key from a file.
@@ -636,7 +661,7 @@ public:
    *
    * @note Calls @c SSL_CTX_use_RSAPrivateKey_file.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID use_rsa_private_key_file(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID use_rsa_private_key_file(
       const std::string& filename, file_format format,
       asio::error_code& ec);
 
@@ -653,7 +678,7 @@ public:
    *
    * @note Calls @c SSL_CTX_set_tmp_dh.
    */
-  ASIO_DECL void use_tmp_dh(const const_buffer& dh);
+  ASIO_DTLS_DECL void use_tmp_dh(const const_buffer& dh);
 
   /// Use the specified memory buffer to obtain the temporary Diffie-Hellman
   /// parameters.
@@ -668,7 +693,7 @@ public:
    *
    * @note Calls @c SSL_CTX_set_tmp_dh.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID use_tmp_dh(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID use_tmp_dh(
       const const_buffer& dh, asio::error_code& ec);
 
   /// Use the specified file to obtain the temporary Diffie-Hellman parameters.
@@ -683,7 +708,7 @@ public:
    *
    * @note Calls @c SSL_CTX_set_tmp_dh.
    */
-  ASIO_DECL void use_tmp_dh_file(const std::string& filename);
+  ASIO_DTLS_DECL void use_tmp_dh_file(const std::string& filename);
 
   /// Use the specified file to obtain the temporary Diffie-Hellman parameters.
   /**
@@ -697,7 +722,7 @@ public:
    *
    * @note Calls @c SSL_CTX_set_tmp_dh.
    */
-  ASIO_DECL ASIO_SYNC_OP_VOID use_tmp_dh_file(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID use_tmp_dh_file(
       const std::string& filename, asio::error_code& ec);
 
   /// Set the password callback.
@@ -738,7 +763,7 @@ public:
    * @note Calls @c SSL_CTX_set_default_passwd_cb.
    */
   template <typename PasswordCallback>
-  ASIO_SYNC_OP_VOID set_password_callback(PasswordCallback callback,
+  ASIO_DTLS_SYNC_OP_VOID set_password_callback(PasswordCallback callback,
       asio::error_code& ec);
 
 private:
@@ -749,27 +774,27 @@ private:
   struct dh_cleanup;
 
   // Helper function used to set a peer certificate verification callback.
-  ASIO_DECL ASIO_SYNC_OP_VOID do_set_verify_callback(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID do_set_verify_callback(
       ssl::detail::verify_callback_base* callback, asio::error_code& ec);
 
   // Callback used when the SSL implementation wants to verify a certificate.
-  ASIO_DECL static int verify_callback_function(
+  ASIO_DTLS_DECL static int verify_callback_function(
       int preverified, X509_STORE_CTX* ctx);
 
   // Helper function used to set a password callback.
-  ASIO_DECL ASIO_SYNC_OP_VOID do_set_password_callback(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID do_set_password_callback(
       ssl::detail::password_callback_base* callback, asio::error_code& ec);
 
   // Callback used when the SSL implementation wants a password.
-  ASIO_DECL static int password_callback_function(
+  ASIO_DTLS_DECL static int password_callback_function(
       char* buf, int size, int purpose, void* data);
 
   // Helper function to set the temporary Diffie-Hellman parameters from a BIO.
-  ASIO_DECL ASIO_SYNC_OP_VOID do_use_tmp_dh(
+  ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID do_use_tmp_dh(
       BIO* bio, asio::error_code& ec);
 
   // Helper function to make a BIO from a memory buffer.
-  ASIO_DECL BIO* make_buffer_bio(const const_buffer& b);
+  ASIO_DTLS_DECL BIO* make_buffer_bio(const const_buffer& b);
 
   // The underlying native implementation.
   native_handle_type handle_;
@@ -782,7 +807,15 @@ private:
 } // namespace ssl
 } // namespace asio
 
+#if ASIO_DTLS_USE_BOOST
+} // namespace boost
+#endif // ASIO_DTLS_USE_BOOST
+
+#ifdef ASIO_DTLS_USE_BOOST
+#include <boost/asio/detail/pop_options.hpp>
+#else  // ASIO_DTLS_USE_BOOST
 #include "asio/detail/pop_options.hpp"
+#endif // ASIO_DTLS_USE_BOOST
 
 #include "asio/ssl/dtls/impl/context.hpp"
 #if defined(ASIO_HEADER_ONLY)

@@ -1,0 +1,4 @@
+set(examples_boost_client_sources main.cpp)
+
+add_executable(example_boost_client ${examples_boost_client_sources})
+target_link_libraries(example_boost_client asio_dtls Boost::system)

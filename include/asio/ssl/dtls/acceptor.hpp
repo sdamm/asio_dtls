@@ -1,6 +1,21 @@
 #ifndef ASIO_DTLS_ACCEPTOR_HPP
 #define ASIO_DTLS_ACCEPTOR_HPP
 
+#ifdef ASIO_DTLS_USE_BOOST
+#include <boost/asio/detail/push_options.hpp>
+
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/basic_socket.hpp>
+#include <boost/asio/basic_io_object.hpp>
+#include "asio/ssl/dtls/socket.hpp"
+#include <boost/asio/detail/memory.hpp>
+#include "asio/ssl/dtls/detail/cookie_generate_callback.hpp"
+#include "asio/ssl/dtls/detail/cookie_verify_callback.hpp"
+#include <boost/asio/ssl/error.hpp>
+#include <boost/system/error_code.hpp>
+#include "asio/ssl/dtls/context.hpp"
+#include <boost/asio/executor_work_guard.hpp>
+#else  // ASIO_DTLS_USE_BOOST
 #include "asio/detail/push_options.hpp"
 
 #include "asio/io_service.hpp"
@@ -14,7 +29,11 @@
 #include "asio/error_code.hpp"
 #include "asio/ssl/dtls/context.hpp"
 #include "asio/executor_work_guard.hpp"
+#endif // ASIO_DTLS_USE_BOOST
 
+#ifdef ASIO_DTLS_USE_BOOST
+namespace boost {
+#endif // ASIO_DTLS_USE_BOOST
 
 namespace asio {
 namespace ssl {
@@ -85,11 +104,11 @@ public:
    * }
    * @endcode
    */
-  ASIO_SYNC_OP_VOID open(const protocol_type& protocol,
+  ASIO_DTLS_SYNC_OP_VOID open(const protocol_type& protocol,
                          asio::error_code& ec)
   {
     sock_.open(protocol, ec);
-    ASIO_SYNC_OP_VOID_RETURN(ec);
+    ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
   }
 
   /// Bind the acceptor to the given local endpoint.
@@ -140,11 +159,11 @@ public:
    * }
    * @endcode
    */
-  ASIO_SYNC_OP_VOID bind(const endpoint_type& endpoint,
+  ASIO_DTLS_SYNC_OP_VOID bind(const endpoint_type& endpoint,
                          asio::error_code& ec)
   {
     sock_.bind(endpoint, ec);
-    ASIO_SYNC_OP_VOID_RETURN(ec);
+    ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
   }
 
   /// Close the acceptor.
@@ -186,10 +205,10 @@ public:
    * }
    * @endcode
    */
-  ASIO_SYNC_OP_VOID close(asio::error_code& ec)
+  ASIO_DTLS_SYNC_OP_VOID close(asio::error_code& ec)
   {
     sock_.close(ec);
-    ASIO_SYNC_OP_VOID_RETURN(ec);
+    ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
   }
 
   /// Cancel all asynchronous operations associated with the acceptor.
@@ -215,10 +234,10 @@ public:
    *
    * @param ec Set to indicate what error occurred, if any.
    */
-  ASIO_SYNC_OP_VOID cancel(asio::error_code& ec)
+  ASIO_DTLS_SYNC_OP_VOID cancel(asio::error_code& ec)
   {
     sock_.cancel(ec);
-    ASIO_SYNC_OP_VOID_RETURN(ec);
+    ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
   }
 
   /// Set an option on the acceptor.
@@ -277,11 +296,11 @@ public:
    * @endcode
    */
   template <typename SettableSocketOption>
-  ASIO_SYNC_OP_VOID set_option(const SettableSocketOption& option,
+  ASIO_DTLS_SYNC_OP_VOID set_option(const SettableSocketOption& option,
                                asio::error_code& ec)
   {
     sock_.set_option(option, ec);
-    ASIO_SYNC_OP_VOID_RETURN(ec);
+    ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
   }
 
   /// Get an option from the acceptor.
@@ -342,11 +361,11 @@ public:
    * @endcode
    */
   template <typename GettableSocketOption>
-  ASIO_SYNC_OP_VOID get_option(GettableSocketOption& option,
+  ASIO_DTLS_SYNC_OP_VOID get_option(GettableSocketOption& option,
                                asio::error_code& ec)
   {
     sock_.get_option(option, ec);
-    ASIO_SYNC_OP_VOID_RETURN(ec);
+    ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
   }
 
   template <typename CookieGenerateCallback>
@@ -428,11 +447,11 @@ public:
    * @endcode
    */
   template <typename IoControlCommand>
-  ASIO_SYNC_OP_VOID io_control(IoControlCommand& command,
+  ASIO_DTLS_SYNC_OP_VOID io_control(IoControlCommand& command,
                                asio::error_code& ec)
   {
     sock_.io_control(command, ec);
-    ASIO_SYNC_OP_VOID_RETURN(ec);
+    ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
   }
 
   /// Gets the non-blocking mode of the acceptor.
@@ -484,11 +503,11 @@ public:
    * operations. Asynchronous operations will never fail with the error
    * asio::error::would_block.
    */
-  ASIO_SYNC_OP_VOID non_blocking(
+  ASIO_DTLS_SYNC_OP_VOID non_blocking(
       bool mode, asio::error_code& ec)
   {
     sock_.non_blocking(mode, ec);
-    ASIO_SYNC_OP_VOID_RETURN(ec);
+    ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
   }
 
   /// Gets the non-blocking mode of the native acceptor implementation.
@@ -547,11 +566,11 @@ public:
    * function fails with asio::error::invalid_argument, as the
    * combination does not make sense.
    */
-  ASIO_SYNC_OP_VOID native_non_blocking(
+  ASIO_DTLS_SYNC_OP_VOID native_non_blocking(
       bool mode, asio::error_code& ec)
   {
     sock_.native_non_blocking(mode, ec);
-    ASIO_SYNC_OP_VOID_RETURN(ec);
+    ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
   }
 
   /// Get the local endpoint of the acceptor.
@@ -677,16 +696,16 @@ public:
    * @endcode
    */
   template <typename AcceptHandler, typename MutableBuffer>
-  ASIO_INITFN_RESULT_TYPE(AcceptHandler,
+  ASIO_DTLS_INITFN_RESULT_TYPE(AcceptHandler,
                           void (asio::error_code, DatagramSocketType))
   async_accept(socket<DatagramSocketType> &sock,
                const MutableBuffer& buffer,
-               ASIO_MOVE_ARG(AcceptHandler) handler,
+               ASIO_DTLS_MOVE_ARG(AcceptHandler) handler,
                asio::error_code &ec)
   {
     // If you get an error on the following line it means that your handler does
     // not meet the documented type requirements for a ReceiveHandler.
-    ASIO_READ_HANDLER_CHECK(AcceptHandler, handler) type_check;
+    ASIO_DTLS_READ_HANDLER_CHECK(AcceptHandler, handler) type_check;
 
     async_completion<AcceptHandler,
         void (asio::error_code,
@@ -720,7 +739,7 @@ public:
     sock_.async_receive_from(buffer,
                             remoteEndPoint_,
     dtls_acceptor_callback_helper<
-      ASIO_HANDLER_TYPE(AcceptHandler,void(const asio::error_code&, size_t))>
+      ASIO_DTLS_HANDLER_TYPE(AcceptHandler,void(const asio::error_code&, size_t))>
         (*this, std::move(init.completion_handler), sock, buffer));
 
     return init.result.get();
@@ -816,6 +835,14 @@ private:
 } // namespace ssl
 } // namespace asio
 
+#ifdef ASIO_DTLS_USE_BOOST
+} // namespace boost
+#endif // ASIO_DTLS_USE_BOOST
+
+#ifdef ASIO_DTLS_USE_BOOST
+#include <boost/asio/detail/pop_options.hpp>
+#else  // ASIO_DTLS_USE_BOOST
 #include "asio/detail/pop_options.hpp"
+#endif // ASIO_DTLS_USE_BOOST
 
 #endif // ASIO_DTLS_ACCEPTOR_HPP

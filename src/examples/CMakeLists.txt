@@ -1,6 +1,8 @@
 project(examples)
 
-add_subdirectory(async_client)
-add_subdirectory(client)
-add_subdirectory(server)
+if(asio_dtls_use_boost)
+add_subdirectory(boost)
+else(asio_dtls_use_boost)
+add_subdirectory(asio)
+endif(asio_dtls_use_boost)
 

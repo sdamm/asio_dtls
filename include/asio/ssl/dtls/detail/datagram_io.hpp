@@ -15,6 +15,18 @@
 # pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include "asio/ssl/dtls/detail/macro_helper.hpp"
+
+#ifdef ASIO_DTLS_USE_BOOST
+#include <boost/asio/detail/config.hpp>
+
+#include "asio/ssl/dtls/detail/engine.hpp"
+#include "asio/ssl/dtls/detail/core.hpp"
+#include <boost/asio/write.hpp>
+#include <boost/asio/socket_base.hpp>
+
+#include <boost/asio/detail/push_options.hpp>
+#else  // ASIO_DTLS_USE_BOOST
 #include "asio/detail/config.hpp"
 
 #include "asio/ssl/dtls/detail/engine.hpp"
@@ -23,6 +35,11 @@
 #include "asio/socket_base.hpp"
 
 #include "asio/detail/push_options.hpp"
+#endif // ASIO_DTLS_USE_BOOST
+
+#ifdef ASIO_DTLS_USE_BOOST
+namespace boost {
+#endif // ASIO_DTLS_USE_BOOST
 
 namespace asio {
 namespace ssl {
@@ -110,7 +127,7 @@ public:
       start_(0),
       want_(engine::want_nothing),
       bytes_transferred_(0),
-      handler_(ASIO_MOVE_CAST(Handler)(handler))
+      handler_(ASIO_DTLS_MOVE_CAST(Handler)(handler))
   {
   }
 
@@ -137,7 +154,7 @@ public:
       want_(other.want_),
       ec_(other.ec_),
       bytes_transferred_(other.bytes_transferred_),
-      handler_(ASIO_MOVE_CAST(Handler)(other.handler_))
+      handler_(ASIO_DTLS_MOVE_CAST(Handler)(other.handler_))
   {
   }
 #endif // defined(ASIO_HAS_MOVE)
@@ -174,12 +191,12 @@ public:
             // Start reading some data from the underlying transport.
             receive_function_(
                 asio::buffer(core_.input_buffer_),
-                ASIO_MOVE_CAST(datagram_io_op)(*this));
+                ASIO_DTLS_MOVE_CAST(datagram_io_op)(*this));
           }
           else
           {
             // Wait until the current read operation completes.
-            core_.pending_read_.async_wait(ASIO_MOVE_CAST(datagram_io_op)(*this));
+            core_.pending_read_.async_wait(ASIO_DTLS_MOVE_CAST(datagram_io_op)(*this));
           }
 
           // Yield control until asynchronous operation completes. Control
@@ -200,12 +217,12 @@ public:
 
             // Start writing all the data to the underlying transport.
             send_function_(core_.engine_.get_output(core_.output_buffer_),
-                                   ASIO_MOVE_CAST(datagram_io_op)(*this));
+                                   ASIO_DTLS_MOVE_CAST(datagram_io_op)(*this));
           }
           else
           {
             // Wait until the current write operation completes.
-            core_.pending_write_.async_wait(ASIO_MOVE_CAST(datagram_io_op)(*this));
+            core_.pending_write_.async_wait(ASIO_DTLS_MOVE_CAST(datagram_io_op)(*this));
           }
 
           // Yield control until asynchronous operation completes. Control
@@ -223,7 +240,7 @@ public:
           {
             receive_function_(
                 asio::buffer(core_.input_buffer_, 0),
-                ASIO_MOVE_CAST(datagram_io_op)(*this));
+                ASIO_DTLS_MOVE_CAST(datagram_io_op)(*this));
 
             // Yield control until asynchronous operation completes. Control
             // resumes at the "default:" label below.
@@ -306,7 +323,7 @@ template <typename ReceiveFunction, typename SendFunction,
 inline void* asio_handler_allocate(std::size_t size,
     datagram_io_op<ReceiveFunction, SendFunction, Operation, Handler>* this_handler)
 {
-  return asio_handler_alloc_helpers::allocate(
+  return asio_dtls_handler_alloc_helpers::allocate(
       size, this_handler->handler_);
 }
 
@@ -315,7 +332,7 @@ template <typename ReceiveFunction, typename SendFunction,
 inline void asio_handler_deallocate(void* pointer, std::size_t size,
     datagram_io_op<ReceiveFunction, SendFunction, Operation, Handler>* this_handler)
 {
-  asio_handler_alloc_helpers::deallocate(
+  asio_dtls_handler_alloc_helpers::deallocate(
       pointer, size, this_handler->handler_);
 }
 
@@ -325,7 +342,7 @@ inline bool asio_handler_is_continuation(
     datagram_io_op<ReceiveFunction, SendFunction, Operation, Handler>* this_handler)
 {
   return this_handler->start_ == 0 ? true
-    : asio_handler_cont_helpers::is_continuation(this_handler->handler_);
+    : asio_dtls_handler_cont_helpers::is_continuation(this_handler->handler_);
 }
 
 template <typename Function, typename ReceiveFunction, typename SendFunction,
@@ -333,7 +350,7 @@ template <typename Function, typename ReceiveFunction, typename SendFunction,
 inline void asio_handler_invoke(Function& function,
     datagram_io_op<ReceiveFunction, SendFunction, Operation, Handler>* this_handler)
 {
-  asio_handler_invoke_helpers::invoke(
+  asio_dtls_handler_invoke_helpers::invoke(
       function, this_handler->handler_);
 }
 
@@ -342,7 +359,7 @@ template <typename Function, typename ReceiveFunction, typename SendFunction,
 inline void asio_handler_invoke(const Function& function,
     datagram_io_op<ReceiveFunction, SendFunction, Operation, Handler>* this_handler)
 {
-  asio_handler_invoke_helpers::invoke(
+  asio_dtls_handler_invoke_helpers::invoke(
       function, this_handler->handler_);
 }
 
@@ -368,7 +385,7 @@ struct associated_allocator<
   typedef typename associated_allocator<Handler, Allocator>::type type;
 
   static type get(const ssl::dtls::detail::datagram_io_op<ReceiveFunction, SendFunction, Operation, Handler>& h,
-      const Allocator& a = Allocator()) ASIO_NOEXCEPT
+      const Allocator& a = Allocator()) ASIO_DTLS_NOEXCEPT
   {
     return associated_allocator<Handler, Allocator>::get(h.handler_, a);
   }
@@ -382,7 +399,7 @@ struct associated_executor<
   typedef typename associated_executor<Handler, Executor>::type type;
 
   static type get(const ssl::dtls::detail::datagram_io_op<ReceiveFunction, SendFunction, Operation, Handler>& h,
-      const Executor& ex = Executor()) ASIO_NOEXCEPT
+      const Executor& ex = Executor()) ASIO_DTLS_NOEXCEPT
   {
     return associated_executor<Handler, Executor>::get(h.handler_, ex);
   }
@@ -390,6 +407,14 @@ struct associated_executor<
 
 } // namespace asio
 
+#if ASIO_DTLS_USE_BOOST
+} // namespace boost
+#endif // ASIO_DTLS_USE_BOOST
+
+#ifdef ASIO_DTLS_USE_BOOST
+#include <boost/asio/detail/pop_options.hpp>
+#else  // ASIO_DTLS_USE_BOOST
 #include "asio/detail/pop_options.hpp"
+#endif // ASIO_DTLS_USE_BOOST
 
 #endif // ASIO_SSL_DTLS_DETAIL_DATAGRAM_IO_HPP
