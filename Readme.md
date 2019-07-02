@@ -69,10 +69,15 @@ does not. A `dtls_context` does not allow stream based methods like `tlsv12_serv
 
 
 ## Dependencies
-* Asio (tested with 1.13.0)
+* Asio (tested with 1.13.0) or Boost (tested with 1.70)
 * OpenSSL > 1.0.2 or
 * OpenSSL > 1.1.0 for correct dtls\_listen support
 * cmake >= 3.2
+
+### Usage with Boost
+Define ASIO\_DTLS\_USE\_BOOST to use the Boost version. The Boost version uses
+the boost namespaces. So `asio::ssl::dtls::context` becomes
+`boost::asio::ssl::dtls::context`.
 
 ## Work in Progress
 This library is not finished and parts of the Code are copies from Files of ASIO.
