@@ -15,12 +15,25 @@
 # pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#ifdef ASIO_DTLS_USE_BOOST
+#include <boost/asio/detail/config.hpp>
+
+#include <boost/asio/detail/buffer_sequence_adapter.hpp>
+#include "asio/ssl/dtls/detail/engine.hpp"
+
+#include <boost/asio/detail/push_options.hpp>
+#else  // ASIO_DTLS_USE_BOOST
 #include "asio/detail/config.hpp"
 
 #include "asio/detail/buffer_sequence_adapter.hpp"
 #include "asio/ssl/dtls/detail/engine.hpp"
 
 #include "asio/detail/push_options.hpp"
+#endif // ASIO_DTLS_USE_BOOST
+
+#ifdef ASIO_DTLS_USE_BOOST
+namespace boost {
+#endif // ASIO_DTLS_USE_BOOST
 
 namespace asio {
 namespace ssl {
@@ -64,6 +77,14 @@ private:
 } // namespace ssl
 } // namespace asio
 
+#if ASIO_DTLS_USE_BOOST
+} // namespace boost
+#endif // ASIO_DTLS_USE_BOOST
+
+#ifdef ASIO_DTLS_USE_BOOST
+#include <boost/asio/detail/pop_options.hpp>
+#else  // ASIO_DTLS_USE_BOOST
 #include "asio/detail/pop_options.hpp"
+#endif // ASIO_DTLS_USE_BOOST
 
 #endif // ASIO_SSL_DTLS_DETAIL_WRITE_OP_HPP

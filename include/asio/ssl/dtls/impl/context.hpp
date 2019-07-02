@@ -16,11 +16,25 @@
 # pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#ifdef ASIO_DTLS_USE_BOOST
+#include "asio/ssl/dtls/error_code.hpp"
+#include "asio/ssl/dtls/detail/macro_helper.hpp"
+#include <boost/asio/detail/config.hpp>
+
+#include <boost/asio/detail/throw_error.hpp>
+
+#include <boost/asio/detail/push_options.hpp>
+#else  // ASIO_DTLS_USE_BOOST
 #include "asio/detail/config.hpp"
 
 #include "asio/detail/throw_error.hpp"
 
 #include "asio/detail/push_options.hpp"
+#endif // ASIO_DTLS_USE_BOOST
+
+#ifdef ASIO_DTLS_USE_BOOST
+namespace boost {
+#endif // ASIO_DTLS_USE_BOOST
 
 namespace asio {
 namespace ssl {
@@ -35,12 +49,12 @@ void context::set_verify_callback(VerifyCallback callback)
 }
 
 template <typename VerifyCallback>
-ASIO_SYNC_OP_VOID context::set_verify_callback(
+ASIO_DTLS_SYNC_OP_VOID context::set_verify_callback(
     VerifyCallback callback, asio::error_code& ec)
 {
   do_set_verify_callback(
-      new detail::verify_callback<VerifyCallback>(callback), ec);
-  ASIO_SYNC_OP_VOID_RETURN(ec);
+      new asio::ssl::detail::verify_callback<VerifyCallback>(callback), ec);
+  ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
 }
 
 template <typename PasswordCallback>
@@ -52,18 +66,26 @@ void context::set_password_callback(PasswordCallback callback)
 }
 
 template <typename PasswordCallback>
-ASIO_SYNC_OP_VOID context::set_password_callback(
+ASIO_DTLS_SYNC_OP_VOID context::set_password_callback(
     PasswordCallback callback, asio::error_code& ec)
 {
   do_set_password_callback(
-      new detail::password_callback<PasswordCallback>(callback), ec);
-  ASIO_SYNC_OP_VOID_RETURN(ec);
+      new asio::ssl::detail::password_callback<PasswordCallback>(callback), ec);
+  ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
 }
 
 } // namespace dtls
 } // namespace ssl
 } // namespace asio
 
+#if ASIO_DTLS_USE_BOOST
+} // namespace boost
+#endif // ASIO_DTLS_USE_BOOST
+
+#ifdef ASIO_DTLS_USE_BOOST
+#include <boost/asio/detail/pop_options.hpp>
+#else  // ASIO_DTLS_USE_BOOST
 #include "asio/detail/pop_options.hpp"
+#endif // ASIO_DTLS_USE_BOOST
 
 #endif // ASIO_SSL_IMPL_CONTEXT_HPP

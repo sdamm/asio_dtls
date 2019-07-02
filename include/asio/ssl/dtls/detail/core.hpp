@@ -15,9 +15,19 @@
 # pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include "asio/ssl/dtls/detail/macro_helper.hpp"
+
+#ifdef ASIO_DTLS_USE_BOOST
+#include <boost/asio/detail/config.hpp>
+#include <boost/asio/deadline_timer.hpp>
+#include "asio/ssl/dtls/detail/engine.hpp"
+#include <boost/asio/buffer.hpp>
+
+#include <boost/asio/detail/push_options.hpp>
+#else  // ASIO_DTLS_USE_BOOST
 #include "asio/detail/config.hpp"
 
-#if defined(ASIO_HAS_BOOST_DATE_TIME)
+#if defined(ASIO_DTLS_HAS_BOOST_DATE_TIME)
 # include "asio/deadline_timer.hpp"
 #else // defined(ASIO_HAS_BOOST_DATE_TIME)
 # include "asio/steady_timer.hpp"
@@ -26,6 +36,11 @@
 #include "asio/buffer.hpp"
 
 #include "asio/detail/push_options.hpp"
+#endif // ASIO_DTLS_USE_BOOST
+
+#ifdef ASIO_DTLS_USE_BOOST
+namespace boost {
+#endif // ASIO_DTLS_USE_BOOST
 
 namespace asio {
 namespace ssl {
@@ -59,7 +74,7 @@ struct core
   // The SSL engine.
   engine engine_;
 
-#if defined(ASIO_HAS_BOOST_DATE_TIME)
+#if defined(ASIO_DTLS_HAS_BOOST_DATE_TIME)
   // Timer used for storing queued read operations.
   asio::deadline_timer pending_read_;
 
@@ -132,6 +147,14 @@ struct core
 } // namespace ssl
 } // namespace asio
 
+#if ASIO_DTLS_USE_BOOST
+} // namespace boost
+#endif // ASIO_DTLS_USE_BOOST
+
+#ifdef ASIO_DTLS_USE_BOOST
+#include <boost/asio/detail/pop_options.hpp>
+#else  // ASIO_DTLS_USE_BOOST
 #include "asio/detail/pop_options.hpp"
+#endif // ASIO_DTLS_USE_BOOST
 
 #endif // ASIO_SSL_DTLS_DETAIL_CORE_HPP

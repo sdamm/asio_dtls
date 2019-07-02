@@ -1,9 +1,18 @@
 #include <array>
+#ifdef ASIO_DTLS_USE_BOOST
+#include <boost/asio/ip/udp.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#else  // ASIO_DTLS_USE_BOOST
 #include <asio/ip/udp.hpp>
+#include <asio/ip/tcp.hpp>
+#endif // ASIO_DTLS_USE_BOOST
 #include <asio/ssl/dtls/acceptor.hpp>
 #include <asio/ssl/dtls/socket.hpp>
 
-#include <asio/ip/tcp.hpp>
+#ifdef ASIO_DTLS_USE_BOOST
+namespace asio = boost::asio;
+#endif // ASIO_DTLS_USE_BOOST
+
 
 // These checks make sure using the classes compile. They are no
 // example for proper usage.

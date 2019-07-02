@@ -15,6 +15,37 @@
 # pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include "asio/ssl/dtls/detail/macro_helper.hpp"
+
+#ifdef ASIO_DTLS_USE_BOOST
+#include <boost/asio/detail/config.hpp>
+
+#include <boost/asio/async_result.hpp>
+#include <boost/asio/detail/buffer_sequence_adapter.hpp>
+#include <boost/asio/detail/handler_type_requirements.hpp>
+#include <boost/asio/detail/non_const_lvalue.hpp>
+#include <boost/asio/detail/noncopyable.hpp>
+#include <boost/asio/detail/type_traits.hpp>
+#include <boost/asio/ssl/context.hpp>
+#include "asio/ssl/dtls/detail/listen_op.hpp"
+#include "asio/ssl/dtls/detail/buffered_dtls_listen_op.hpp"
+#include "asio/ssl/dtls/detail/buffered_handshake_op.hpp"
+#include "asio/ssl/dtls/detail/handshake_op.hpp"
+#include "asio/ssl/dtls/detail/datagram_io.hpp"
+#include "asio/ssl/dtls/detail/read_op.hpp"
+#include "asio/ssl/dtls/detail/shutdown_op.hpp"
+#include "asio/ssl/dtls/detail/core.hpp"
+#include "asio/ssl/dtls/detail/engine.hpp"
+#include "asio/ssl/dtls/detail/write_op.hpp"
+#include <boost/asio/ssl/stream_base.hpp>
+#include "asio/ssl/dtls/context.hpp"
+#include "asio/ssl/dtls/detail/datagram_helper.hpp"
+#include <boost/asio/detail/type_traits.hpp>
+#include "asio/ssl/dtls/detail/cookie_generate_callback.hpp"
+#include "asio/ssl/dtls/detail/cookie_verify_callback.hpp"
+
+#include <boost/asio/detail/push_options.hpp>
+#else  // ASIO_DTLS_USE_BOOST
 #include "asio/detail/config.hpp"
 
 #include "asio/async_result.hpp"
@@ -42,6 +73,11 @@
 #include "asio/ssl/dtls/detail/cookie_verify_callback.hpp"
 
 #include "asio/detail/push_options.hpp"
+#endif // ASIO_DTLS_USE_BOOST
+
+#ifdef ASIO_DTLS_USE_BOOST
+namespace boost {
+#endif // ASIO_DTLS_USE_BOOST
 
 namespace asio {
 namespace ssl  {
@@ -133,7 +169,7 @@ public:
    *
    * @return A copy of the executor that stream will use to dispatch handlers.
    */
-  executor_type get_executor() ASIO_NOEXCEPT
+  executor_type get_executor() ASIO_DTLS_NOEXCEPT
   {
     return next_layer_.lowest_layer().get_executor();
   }
@@ -277,7 +313,7 @@ public:
    * @note Calls @c SSL_CTX_set_cookie_generate_cb.
    */
   template <typename CookieGenerateCallback>
-  ASIO_DECL void set_cookie_generate_callback(CookieGenerateCallback cb)
+  ASIO_DTLS_DECL void set_cookie_generate_callback(CookieGenerateCallback cb)
   {
     asio::error_code ec;
     set_cookie_generate_callback(cb, ec);
@@ -285,7 +321,7 @@ public:
     asio::detail::throw_error(ec, "set_cookie_generate_callback");
   }  
 
-  ASIO_DECL asio::error_code set_cookie_generate_callback(
+  ASIO_DTLS_DECL asio::error_code set_cookie_generate_callback(
       detail::cookie_generate_callback_base& cb, asio::error_code& ec)
   {
     core_.engine_.set_cookie_generate_callback(cb.clone(), ec);
@@ -309,7 +345,7 @@ public:
    * @note Calls @c SSL_CTX_set_cookie_generate_cb.
    */
   template <typename CookieVerifyCallback>
-  ASIO_DECL asio::error_code set_cookie_generate_callback(
+  ASIO_DTLS_DECL asio::error_code set_cookie_generate_callback(
       CookieVerifyCallback callback, asio::error_code &ec)
   {
     core_.engine_.set_cookie_generate_callback(
@@ -321,7 +357,7 @@ public:
     return ec;
   }
 
-  ASIO_DECL asio::error_code set_cookie_verify_callback(
+  ASIO_DTLS_DECL asio::error_code set_cookie_verify_callback(
       detail::cookie_verify_callback_base& callback, asio::error_code& ec)
   {
     core_.engine_.set_cookie_verify_callback(callback.clone(), ec);
@@ -345,7 +381,7 @@ public:
    * @note Calls @c SSL_CTX_set_cookie_generate_cb.
    */
   template <typename CookieCallback>
-  ASIO_DECL void set_cookie_verify_callback(CookieCallback callback)
+  ASIO_DTLS_DECL void set_cookie_verify_callback(CookieCallback callback)
   {
     asio::error_code ec;
     set_cookie_verify_callback(callback, ec);
@@ -369,7 +405,7 @@ public:
    * @note Calls @c SSL_CTX_set_cookie_generate_cb.
    */
   template <typename CookieCallback>
-  ASIO_DECL asio::error_code set_cookie_verify_callback(
+  ASIO_DTLS_DECL asio::error_code set_cookie_verify_callback(
       CookieCallback callback, asio::error_code &ec)
   {
     core_.engine_.set_cookie_verify_callback(
@@ -445,11 +481,11 @@ public:
    *
    * @note Calls @c SSL_set_verify.
    */
-  ASIO_SYNC_OP_VOID set_verify_mode(
+  ASIO_DTLS_SYNC_OP_VOID set_verify_mode(
       verify_mode v, asio::error_code& ec)
   {
     core_.engine_.set_verify_mode(v, ec);
-    ASIO_SYNC_OP_VOID_RETURN(ec);
+    ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
   }
 
   /// Set the peer verification depth.
@@ -483,11 +519,11 @@ public:
    *
    * @note Calls @c SSL_set_verify_depth.
    */
-  ASIO_SYNC_OP_VOID set_verify_depth(
+  ASIO_DTLS_SYNC_OP_VOID set_verify_depth(
       int depth, asio::error_code& ec)
   {
     core_.engine_.set_verify_depth(depth, ec);
-    ASIO_SYNC_OP_VOID_RETURN(ec);
+    ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
   }
 
   /// Set the callback used to verify peer certificates.
@@ -535,12 +571,12 @@ public:
    * @note Calls @c SSL_set_verify.
    */
   template <typename VerifyCallback>
-  ASIO_SYNC_OP_VOID set_verify_callback(VerifyCallback callback,
+  ASIO_DTLS_SYNC_OP_VOID set_verify_callback(VerifyCallback callback,
       asio::error_code& ec)
   {
     core_.engine_.set_verify_callback(
         new ssl::detail::verify_callback<VerifyCallback>(callback), ec);
-    ASIO_SYNC_OP_VOID_RETURN(ec);
+    ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
   }
 
   /// Perform SSL handshaking.
@@ -570,7 +606,7 @@ public:
    *
    * @param ec Set to indicate what error occurred, if any.
    */
-  ASIO_SYNC_OP_VOID handshake(handshake_type type,
+  ASIO_DTLS_SYNC_OP_VOID handshake(handshake_type type,
       asio::error_code& ec)
   {
     remote_endpoint_tmp_ = next_layer().remote_endpoint();
@@ -581,7 +617,7 @@ public:
           core_,
           ssl::dtls::detail::handshake_op(type),
           ec);
-    ASIO_SYNC_OP_VOID_RETURN(ec);
+    ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
   }
 
   /// Perform SSL handshaking.
@@ -617,7 +653,7 @@ public:
    * @param ec Set to indicate what error occurred, if any.
    */
   template <typename ConstBufferSequence>
-  ASIO_SYNC_OP_VOID handshake(handshake_type type,
+  ASIO_DTLS_SYNC_OP_VOID handshake(handshake_type type,
       const ConstBufferSequence& buffers, asio::error_code& ec)
   {
     remote_endpoint_tmp_ = next_layer().remote_endpoint();
@@ -627,7 +663,7 @@ public:
       core_,
       detail::buffered_handshake_op<ConstBufferSequence>(type, buffers),
       ec);
-    ASIO_SYNC_OP_VOID_RETURN(ec);
+    ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
   }
 
   /// Start an asynchronous SSL handshake.
@@ -646,10 +682,10 @@ public:
    * ); @endcode
    */
   template <typename HandshakeHandler>
-  ASIO_INITFN_RESULT_TYPE(HandshakeHandler,
+  ASIO_DTLS_INITFN_RESULT_TYPE(HandshakeHandler,
       void (asio::error_code))
   async_handshake(handshake_type type,
-      ASIO_MOVE_ARG(HandshakeHandler) handler)
+      ASIO_DTLS_MOVE_ARG(HandshakeHandler) handler)
   {
       return async_initiate<HandshakeHandler,
         void (asio::error_code)>(
@@ -678,10 +714,10 @@ public:
    * ); @endcode
    */
   template <typename ConstBufferSequence, typename BufferedHandshakeHandler>
-  ASIO_INITFN_RESULT_TYPE(BufferedHandshakeHandler,
+  ASIO_DTLS_INITFN_RESULT_TYPE(BufferedHandshakeHandler,
       void (asio::error_code, std::size_t))
   async_handshake(handshake_type type, const ConstBufferSequence& buffers,
-      ASIO_MOVE_ARG(BufferedHandshakeHandler) handler)
+      ASIO_DTLS_MOVE_ARG(BufferedHandshakeHandler) handler)
   {
       return async_initiate<BufferedHandshakeHandler,
         void (asio::error_code, std::size_t)>(
@@ -709,14 +745,14 @@ public:
    *
    * @param ec Set to indicate what error occurred, if any.
    */
-  ASIO_SYNC_OP_VOID shutdown(asio::error_code& ec)
+  ASIO_DTLS_SYNC_OP_VOID shutdown(asio::error_code& ec)
   {
     ssl::dtls::detail::datagram_io(
       dtls::detail::datagram_receive<next_layer_type>(this->next_layer_),
       dtls::detail::datagram_send<next_layer_type>(this->next_layer_, 0),
       core_, detail::shutdown_op(),
       ec);
-    ASIO_SYNC_OP_VOID_RETURN(ec);
+    ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
   }
 
   /// Asynchronously shut down SSL on the stream.
@@ -732,9 +768,9 @@ public:
    * ); @endcode
    */
   template <typename ShutdownHandler>
-  ASIO_INITFN_RESULT_TYPE(ShutdownHandler,
+  ASIO_DTLS_INITFN_RESULT_TYPE(ShutdownHandler,
       void (asio::error_code))
-  async_shutdown(ASIO_MOVE_ARG(ShutdownHandler) handler)
+  async_shutdown(ASIO_DTLS_MOVE_ARG(ShutdownHandler) handler)
   {
       return async_initiate<ShutdownHandler,
         void (asio::error_code)>(
@@ -814,10 +850,10 @@ public:
    * ensure that all data is written before the blocking operation completes.
    */
   template <typename ConstBufferSequence, typename WriteHandler>
-  ASIO_INITFN_RESULT_TYPE(WriteHandler,
+  ASIO_DTLS_INITFN_RESULT_TYPE(WriteHandler,
       void (asio::error_code, std::size_t))
   async_send(const ConstBufferSequence& buffers,
-             ASIO_MOVE_ARG(WriteHandler) handler)
+             ASIO_DTLS_MOVE_ARG(WriteHandler) handler)
   {
       return async_initiate<WriteHandler,
         void (asio::error_code, std::size_t)>(
@@ -901,10 +937,10 @@ public:
    * ); @endcode
    */
   template <typename MutableBufferSequence, typename ReadHandler>
-  ASIO_INITFN_RESULT_TYPE(ReadHandler,
+  ASIO_DTLS_INITFN_RESULT_TYPE(ReadHandler,
       void (asio::error_code, std::size_t))
   async_receive(const MutableBufferSequence& buffers,
-      ASIO_MOVE_ARG(ReadHandler) handler)
+      ASIO_DTLS_MOVE_ARG(ReadHandler) handler)
   {
     return async_initiate<ReadHandler,
       void (asio::error_code, std::size_t)>(
@@ -913,12 +949,12 @@ public:
   struct initiate_async_handshake
   {
     template <typename HandshakeHandler>
-    void operator()(ASIO_MOVE_ARG(HandshakeHandler) handler,
+    void operator()(ASIO_DTLS_MOVE_ARG(HandshakeHandler) handler,
         socket* self, handshake_type type) const
     {
       // If you get an error on the following line it means that your handler
       // does not meet the documented type requirements for a HandshakeHandler.
-      ASIO_HANDSHAKE_HANDLER_CHECK(HandshakeHandler, handler) type_check;
+      ASIO_DTLS_HANDSHAKE_HANDLER_CHECK(HandshakeHandler, handler) type_check;
 
       asio::detail::non_const_lvalue<HandshakeHandler> handler2(handler);
       ssl::dtls::detail::async_datagram_io(
@@ -934,14 +970,14 @@ public:
   struct initiate_async_buffered_handshake
   {
     template <typename BufferedHandshakeHandler, typename ConstBufferSequence>
-    void operator()(ASIO_MOVE_ARG(BufferedHandshakeHandler) handler,
+    void operator()(ASIO_DTLS_MOVE_ARG(BufferedHandshakeHandler) handler,
         socket* self, handshake_type type,
         const ConstBufferSequence& buffers) const
     {
       // If you get an error on the following line it means that your
       // handler does not meet the documented type requirements for a
       // BufferedHandshakeHandler.
-      ASIO_BUFFERED_HANDSHAKE_HANDLER_CHECK(
+      ASIO_DTLS_BUFFERED_HANDSHAKE_HANDLER_CHECK(
           BufferedHandshakeHandler, handler) type_check;
 
       asio::detail::non_const_lvalue<
@@ -958,12 +994,12 @@ public:
   struct initiate_async_shutdown
   {
     template <typename ShutdownHandler>
-    void operator()(ASIO_MOVE_ARG(ShutdownHandler) handler,
+    void operator()(ASIO_DTLS_MOVE_ARG(ShutdownHandler) handler,
         socket* self) const
     {
       // If you get an error on the following line it means that your handler
       // does not meet the documented type requirements for a ShutdownHandler.
-      ASIO_HANDSHAKE_HANDLER_CHECK(ShutdownHandler, handler) type_check;
+      ASIO_DTLS_HANDSHAKE_HANDLER_CHECK(ShutdownHandler, handler) type_check;
 
       asio::detail::non_const_lvalue<ShutdownHandler> handler2(handler);
       ssl::dtls::detail::async_datagram_io(
@@ -977,12 +1013,12 @@ public:
   struct initiate_async_send
   {
     template <typename WriteHandler, typename ConstBufferSequence>
-    void operator()(ASIO_MOVE_ARG(WriteHandler) handler,
+    void operator()(ASIO_DTLS_MOVE_ARG(WriteHandler) handler,
         socket* self, const ConstBufferSequence& buffers) const
     {
       // If you get an error on the following line it means that your handler
       // does not meet the documented type requirements for a WriteHandler.
-      ASIO_WRITE_HANDLER_CHECK(WriteHandler, handler) type_check;
+      ASIO_DTLS_WRITE_HANDLER_CHECK(WriteHandler, handler) type_check;
 
       asio::detail::non_const_lvalue<WriteHandler> handler2(handler);
       dtls::detail::async_datagram_io(
@@ -996,12 +1032,12 @@ public:
   struct initiate_async_receive
   {
     template <typename ReadHandler, typename MutableBufferSequence>
-    void operator()(ASIO_MOVE_ARG(ReadHandler) handler,
+    void operator()(ASIO_DTLS_MOVE_ARG(ReadHandler) handler,
         socket* self, const MutableBufferSequence& buffers) const
     {
       // If you get an error on the following line it means that your handler
       // does not meet the documented type requirements for a ReadHandler.
-      ASIO_READ_HANDLER_CHECK(ReadHandler, handler) type_check;
+      ASIO_DTLS_READ_HANDLER_CHECK(ReadHandler, handler) type_check;
 
       asio::detail::non_const_lvalue<ReadHandler> handler2(handler);
       dtls::detail::async_datagram_io(
@@ -1024,6 +1060,14 @@ public:
 } // namespace ssl
 } // namespace asio
 
+#if ASIO_DTLS_USE_BOOST
+} // namespace boost
+#endif // ASIO_DTLS_USE_BOOST
+
+#ifdef ASIO_DTLS_USE_BOOST
+#include <boost/asio/detail/pop_options.hpp>
+#else  // ASIO_DTLS_USE_BOOST
 #include "asio/detail/pop_options.hpp"
+#endif // ASIO_DTLS_USE_BOOST
 
 #endif // ASIO_SSL_DTLS_DTLS_SOCKET_HPP

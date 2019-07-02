@@ -5,13 +5,27 @@
 # pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#ifdef ASIO_DTLS_USE_BOOST
+#include <boost/asio/detail/config.hpp>
+
+#include "asio/ssl/dtls/error_code.hpp"
+#include <boost/asio/steady_timer.hpp>
+
+#include <boost/asio/detail/push_options.hpp>
+#else  // ASIO_DTLS_USE_BOOST
 #include "asio/detail/config.hpp"
 
 #include "asio/error_code.hpp"
 #include "asio/steady_timer.hpp"
 
 #include "asio/detail/push_options.hpp"
+#endif // ASIO_DTLS_USE_BOOST
 #include <functional>
+
+#ifdef ASIO_DTLS_USE_BOOST
+namespace boost {
+#endif // ASIO_DTLS_USE_BOOST
+
 namespace asio{
 namespace ssl{
 namespace dtls {
@@ -104,9 +118,9 @@ public:
   }
 
   template <typename Buffer, typename CallBack>
-  void operator()(const Buffer& buffer, ASIO_MOVE_ARG(CallBack) cb) const
+  void operator()(const Buffer& buffer, ASIO_DTLS_MOVE_ARG(CallBack) cb) const
   {
-    socket_.async_receive(buffer, message_flags(), ASIO_MOVE_CAST(CallBack)(cb));
+    socket_.async_receive(buffer, message_flags(), ASIO_DTLS_MOVE_CAST(CallBack)(cb));
   }
 
 private:
@@ -136,10 +150,10 @@ public:
   }
 
   template <typename Buffer, typename CallBack>
-  void operator()(const Buffer& buffer, ASIO_MOVE_ARG(CallBack) cb)
+  void operator()(const Buffer& buffer, ASIO_DTLS_MOVE_ARG(CallBack) cb)
   {
     socket_.async_receive(buffer, message_flags(),
-                          ASIO_MOVE_CAST(CallBack)(cb));
+                          ASIO_DTLS_MOVE_CAST(CallBack)(cb));
 
     SocketType &socket = socket_;
     timer_.async_wait([&socket](const asio::error_code &ec)
@@ -173,9 +187,9 @@ public:
   }
 
   template <typename Buffer, typename CallBack>
-  void operator()(const Buffer& buffer, ASIO_MOVE_ARG(CallBack) cb) const
+  void operator()(const Buffer& buffer, ASIO_DTLS_MOVE_ARG(CallBack) cb) const
   {
-    socket_.async_send(buffer, flags_, ASIO_MOVE_CAST(CallBack)(cb));
+    socket_.async_send(buffer, flags_, ASIO_DTLS_MOVE_CAST(CallBack)(cb));
   }
 
 private:
@@ -191,6 +205,14 @@ private:
 } // namespace ssl
 } // namespace asio
 
+#if ASIO_DTLS_USE_BOOST
+} // namespace boost
+#endif // ASIO_DTLS_USE_BOOST
+
+#ifdef ASIO_DTLS_USE_BOOST
+#include <boost/asio/detail/pop_options.hpp>
+#else  // ASIO_DTLS_USE_BOOST
 #include "asio/detail/pop_options.hpp"
+#endif // ASIO_DTLS_USE_BOOST
 
 #endif // ASIO_SSL_DTLS_DETAIL_DATAGRAM_HELPER_H
