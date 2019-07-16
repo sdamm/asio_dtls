@@ -148,7 +148,7 @@ context::context(context::dtls_method m)
   set_options(no_compression);
 }
 
-#if defined(ASIO_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
+#if defined(ASIO_DTLS_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
 context::context(context&& other)
 {
   handle_ = other.handle_;
@@ -157,12 +157,12 @@ context::context(context&& other)
 
 context& context::operator=(context&& other)
 {
-  context tmp(ASIO_MOVE_CAST(context)(*this));
+  context tmp(ASIO_DTLS_MOVE_CAST(context)(*this));
   handle_ = other.handle_;
   other.handle_ = 0;
   return *this;
 }
-#endif // defined(ASIO_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
+#endif // defined(ASIO_DTLS_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
 
 context::~context()
 {

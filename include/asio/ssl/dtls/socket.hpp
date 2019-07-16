@@ -119,7 +119,7 @@ public:
   /// The type of the executor associated with the object.
   typedef typename lowest_layer_type::executor_type executor_type;
 
-#if defined(ASIO_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
+#if defined(ASIO_DTLS_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
   /// Construct a stream.
   /**
    * This constructor creates a SSL object and initialises the underlying
@@ -132,7 +132,7 @@ public:
    */
   template <typename Arg>
   socket(Arg&& arg, context& ctx)
-    : next_layer_(ASIO_MOVE_CAST(Arg)(arg)),
+    : next_layer_(ASIO_DTLS_MOVE_CAST(Arg)(arg)),
       core_(ctx.native_handle(),
           next_layer_.lowest_layer().get_executor())
   {
@@ -140,7 +140,7 @@ public:
     set_mtu(1500);
     core_.engine_.set_dtls_tmp_data(&remote_endpoint_tmp_);
   }
-#else // defined(ASIO_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
+#else // defined(ASIO_DTLS_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
   template <typename Arg>
   socket(Arg& arg, context& ctx)
     : next_layer_(arg),
@@ -151,7 +151,7 @@ public:
     set_mtu(1500);
     core_.engine_.set_dtls_tmp_data(&remote_endpoint_tmp_);
   }
-#endif // defined(ASIO_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
+#endif // defined(ASIO_DTLS_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
 
   /// Destructor.
   /**

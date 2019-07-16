@@ -101,7 +101,7 @@ public:
   /// Constructor.
   ASIO_DTLS_DECL explicit context(dtls_method m);
 
-#if defined(ASIO_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
+#if defined(ASIO_DTLS_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
   /// Move-construct a context from another.
   /**
    * This constructor moves an SSL context from one object to another.
@@ -127,7 +127,7 @@ public:
    * @li As a target for move-assignment.
    */
   ASIO_DTLS_DECL context& operator=(context&& other);
-#endif // defined(ASIO_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
+#endif // defined(ASIO_DTLS_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
 
   /// Destructor.
   ASIO_DTLS_DECL ~context();

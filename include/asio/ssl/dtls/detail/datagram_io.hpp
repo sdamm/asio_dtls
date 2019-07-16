@@ -131,7 +131,7 @@ public:
   {
   }
 
-#if defined(ASIO_HAS_MOVE)
+#if defined(ASIO_DTLS_HAS_MOVE)
   datagram_io_op(const datagram_io_op& other)
     : receive_function_(other.receive_function_),
       send_function_(other.send_function_),
@@ -157,7 +157,7 @@ public:
       handler_(ASIO_DTLS_MOVE_CAST(Handler)(other.handler_))
   {
   }
-#endif // defined(ASIO_HAS_MOVE)
+#endif // defined(ASIO_DTLS_HAS_MOVE)
 
   void operator()(asio::error_code ec,
       std::size_t bytes_transferred = ~std::size_t(0), int start = 0)
