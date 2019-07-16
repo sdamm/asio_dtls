@@ -46,15 +46,15 @@ void dtls_socket()
 // example for proper usage.
 void dtls_acceptor()
 {
-    asio::io_context ctx;
+    asio::io_context context;
     asio::ssl::dtls::context dtls_ctx{asio::ssl::dtls::context::dtls_server};
     asio::ip::udp::endpoint ep;
     asio::error_code ec;
 
-    asio::ssl::dtls::acceptor<asio::ip::udp::socket> acceptor_test(ctx, ep);
-    asio::ssl::dtls::socket<asio::ip::udp::socket> sock(ctx, dtls_ctx);
+    asio::ssl::dtls::acceptor<asio::ip::udp::socket> acceptor_test(context, ep);
+    asio::ssl::dtls::socket<asio::ip::udp::socket> sock(context, dtls_ctx);
 
-    asio::io_context::strand str(ctx);
+    asio::io_context::strand str(context);
     auto handler_with_strand = asio::bind_executor(str, [](const error_code&, size_t){});
 
     std::array<char, 1> buffer_data{};

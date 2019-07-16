@@ -3,7 +3,7 @@
 
 int main()
 {
-    asio::io_context service;
+    asio::io_context context;
     asio::ssl::dtls::context ctx(asio::ssl::dtls::context::dtls_client);
 
 #if VERIFY_CERTIFICATE
@@ -18,7 +18,7 @@ int main()
     asio::ip::address address(asio::ip::address_v4::from_string("127.0.0.1"));
     asio::ip::udp::endpoint ep(address, 5555);
 
-    Client client(service, ctx, ep);
+    Client client(context, ctx, ep);
 
-    service.run();
+    context.run();
 }

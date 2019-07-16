@@ -4,7 +4,7 @@
 #ifdef ASIO_DTLS_USE_BOOST
 #include <boost/asio/detail/push_options.hpp>
 
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/basic_socket.hpp>
 #include <boost/asio/basic_io_object.hpp>
 #include "asio/ssl/dtls/socket.hpp"
@@ -18,7 +18,7 @@
 #else  // ASIO_DTLS_USE_BOOST
 #include "asio/detail/push_options.hpp"
 
-#include "asio/io_service.hpp"
+#include "asio/io_context.hpp"
 #include "asio/basic_socket.hpp"
 #include "asio/basic_io_object.hpp"
 #include "asio/ssl/dtls/socket.hpp"
@@ -39,10 +39,10 @@ namespace asio {
 namespace ssl {
 namespace dtls {
 
-template <typename DatagramSocketType>
+template <typename DatagramSocketType, typename Executor = executor>
 class acceptor;
 
-template <typename DatagramSocketType>
+template <typename DatagramSocketType, typename Executor>
 class acceptor
 {
 public:
@@ -51,10 +51,31 @@ public:
   typedef typename DatagramSocketType::endpoint_type endpoint_type;
   typedef typename DatagramSocketType::protocol_type protocol_type;
 
-  acceptor(asio::io_service &serv,
-                typename DatagramSocketType::endpoint_type &ep)
-    : service_(serv)
-    , sock_(serv)
+  /// The type of the executor associated with the object.
+  typedef Executor executor_type;
+
+  /// Construct an acceptor without opening it.
+  /**
+   * This constructor creates an acceptor without opening it to listen for new
+   * connections. The open() function must be called before the acceptor can
+   * accept new socket connections.
+   *
+   * @param context An execution context which provides the I/O executor that
+   * the acceptor will use, by default, to dispatch handlers for any
+   * asynchronous operations performed on the acceptor.
+   */
+  template <typename ExecutionContext>
+  explicit acceptor(ExecutionContext& context, endpoint_type &ep,
+      typename enable_if<
+        is_convertible<ExecutionContext&, execution_context&>::value
+      >::type* = 0)
+        : acceptor((executor_type&)(context), ep)
+  {
+  }
+
+  explicit acceptor(const executor_type &ex, endpoint_type &ep)
+    : executor_(ex)
+    , sock_(ex)
     , remoteEndPoint_()
     , cookie_generate_callback_(nullptr)
     , cookie_verify_callback_(nullptr)
@@ -73,7 +94,7 @@ public:
    *
    * @par Example
    * @code
-   * asio::ip::tcp::acceptor acceptor(io_context);
+   * asio::ip::tcp::acceptor acceptor(executor);
    * acceptor.open(asio::ip::tcp::v4());
    * @endcode
    */
@@ -95,7 +116,7 @@ public:
    *
    * @par Example
    * @code
-   * asio::ip::tcp::acceptor acceptor(io_context);
+   * asio::ip::tcp::acceptor acceptor(executor);
    * asio::error_code ec;
    * acceptor.open(asio::ip::tcp::v4(), ec);
    * if (ec)
@@ -779,16 +800,9 @@ public:
     return init.result.get();
   }
 
-  /// Get the service associated with the I/O object.
-  asio::io_service& get_service()
+  executor_type get_executor() const ASIO_DTLS_NOEXCEPT
   {
-    return service_;
-  }
-
-  /// Get the service associated with the I/O object.
-  const asio::io_service& get_service() const
-  {
-    return service_;
+    return executor_;
   }
 
 private:
@@ -840,12 +854,9 @@ private:
       }
     }
 
-    using executor_type = asio::associated_executor_t<AcceptHandler,
-      decltype(std::declval<DatagramSocketType&>().get_executor())>;
-
-    executor_type get_executor() const noexcept
+    executor_type& get_executor() const ASIO_DTLS_NOEXCEPT
     {
-        return (asio::get_associated_executor)(ah_, sock_.get_executor());
+      return sock_.get_executor();
     }
 
   private:
@@ -858,7 +869,7 @@ private:
   };
 
 
-  io_service& service_;
+  const executor_type& executor_;
   DatagramSocketType sock_;
   typename DatagramSocketType::endpoint_type remoteEndPoint_;
   detail::cookie_generate_callback_base* cookie_generate_callback_;

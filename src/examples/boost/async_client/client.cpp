@@ -4,11 +4,11 @@
 
 const char buffer[] = "Hello world!";
 
-Client::Client(boost::asio::io_service& service,
+Client::Client(boost::asio::io_context& context,
                boost::asio::ssl::dtls::context& ctx,
                boost::asio::ip::udp::endpoint& ep)
     : m_ctx(ctx)
-    , m_dtls_con(service, ctx)
+    , m_dtls_con(context, ctx)
     , m_recbuffer()
 {
     m_dtls_con.lowest_layer().connect(ep); // auch Async möglich

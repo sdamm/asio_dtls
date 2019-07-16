@@ -18,14 +18,14 @@ int callback(bool preverified, asio::ssl::verify_context &ctx)
 
 int main()
 {
-    asio::io_context service;
+    asio::io_context context;
     asio::ssl::dtls::context ctx(asio::ssl::dtls::context::dtls_client);
 
     std::cout << "Hello World client" << std::endl;
 
     ctx.set_verify_callback(callback);
 
-    asio::ssl::dtls::socket<asio::ip::udp::socket> dtls_con(service, ctx);
+    asio::ssl::dtls::socket<asio::ip::udp::socket> dtls_con(context, ctx);
 
     asio::ip::udp::endpoint ep(asio::ip::address_v4::loopback(), 5555);
 

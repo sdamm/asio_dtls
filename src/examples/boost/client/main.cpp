@@ -18,14 +18,14 @@ int callback(bool preverified, boost::asio::ssl::verify_context &ctx)
 
 int main()
 {
-    boost::asio::io_context service;
+    boost::asio::io_context context;
     boost::asio::ssl::dtls::context ctx(boost::asio::ssl::dtls::context::dtls_client);
 
     std::cout << "Hello World client" << std::endl;
 
     ctx.set_verify_callback(callback);
 
-    boost::asio::ssl::dtls::socket<boost::asio::ip::udp::socket> dtls_con(service, ctx);
+    boost::asio::ssl::dtls::socket<boost::asio::ip::udp::socket> dtls_con(context, ctx);
 
     boost::asio::ip::udp::endpoint ep(boost::asio::ip::address_v4::loopback(), 5555);
 

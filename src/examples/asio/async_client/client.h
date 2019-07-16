@@ -9,8 +9,7 @@
 class Client
 {
 public:
-    Client(
-        asio::io_service &service,
+    Client(asio::io_context &context,
         asio::ssl::dtls::context &ctx,
         asio::ip::udp::endpoint &ep);
 

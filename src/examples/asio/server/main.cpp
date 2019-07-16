@@ -36,7 +36,8 @@ public:
     typedef std::vector<char> buffer_type;
     typedef asio::detail::shared_ptr<buffer_type> buffer_ptr;
 
-    DTLS_Server(asio::io_service &serv,
+    template<typename Executor>
+    DTLS_Server(Executor &serv,
                 asio::ssl::dtls::context &ctx,
                 typename DatagramSocketType::endpoint_type &ep)
         : m_acceptor(serv, ep)
@@ -52,7 +53,7 @@ public:
 
     void listen()
     {
-        dtls_sock_ptr socket(new dtls_sock(m_acceptor.get_service(), ctx_));
+        dtls_sock_ptr socket(new dtls_sock(m_acceptor.get_executor(), ctx_));
 
         buffer_ptr buffer(new buffer_type(1500));
 
@@ -137,7 +138,7 @@ int main()
 {
     try
     {
-        asio::io_service service;
+        asio::io_context context;
 
         auto listenAddress = asio::ip::address::from_string("127.0.0.1");
         asio::ip::udp::endpoint listenEndpoint(listenAddress, 5555);
@@ -149,10 +150,10 @@ int main()
         ctx.use_certificate_file("cert.pem", asio::ssl::context_base::pem);
         ctx.use_private_key_file("privkey.pem", asio::ssl::context_base::pem);
 
-        DTLS_Server<asio::ip::udp::socket> server(service, ctx, listenEndpoint);
+        DTLS_Server<asio::ip::udp::socket> server(context, ctx, listenEndpoint);
         server.listen();
 
-        service.run();
+        context.run();
     }
     catch (std::exception &ex)
     {

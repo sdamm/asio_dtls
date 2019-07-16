@@ -3,10 +3,10 @@
 
 int main()
 {
-    boost::asio::io_context service;
+    boost::asio::io_context context;
     boost::asio::ssl::dtls::context ctx(boost::asio::ssl::dtls::context::dtls_client);
 
-#if VERIFY_CERTIFICATE
+#ifdef VERIFY_CERTIFICATE
     ctx.set_default_verify_paths();
     ctx.set_verify_mode(
         boost::asio::ssl::context_base::verify_peer
@@ -18,7 +18,7 @@ int main()
     boost::asio::ip::address address(boost::asio::ip::address_v4::from_string("127.0.0.1"));
     boost::asio::ip::udp::endpoint ep(address, 5555);
 
-    Client client(service, ctx, ep);
+    Client client(context, ctx, ep);
 
-    service.run();
+    context.run();
 }
