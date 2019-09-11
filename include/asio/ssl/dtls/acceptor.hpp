@@ -69,13 +69,16 @@ public:
       typename enable_if<
         is_convertible<ExecutionContext&, execution_context&>::value
       >::type* = 0)
-        : acceptor((executor_type&)(context), ep)
+        : sock_(context)
+        , remoteEndPoint_()
+        , cookie_generate_callback_(nullptr)
+        , cookie_verify_callback_(nullptr)
   {
+	  sock_.open(ep.protocol());
   }
 
   explicit acceptor(const executor_type &ex, endpoint_type &ep)
-    : executor_(ex)
-    , sock_(ex)
+    : sock_(ex)
     , remoteEndPoint_()
     , cookie_generate_callback_(nullptr)
     , cookie_verify_callback_(nullptr)
@@ -800,9 +803,9 @@ public:
     return init.result.get();
   }
 
-  executor_type get_executor() const ASIO_DTLS_NOEXCEPT
+  executor_type get_executor() ASIO_DTLS_NOEXCEPT
   {
-    return executor_;
+    return sock_.get_executor();
   }
 
 private:
@@ -869,7 +872,6 @@ private:
   };
 
 
-  const executor_type& executor_;
   DatagramSocketType sock_;
   typename DatagramSocketType::endpoint_type remoteEndPoint_;
   detail::cookie_generate_callback_base* cookie_generate_callback_;
