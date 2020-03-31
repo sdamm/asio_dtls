@@ -20,4 +20,4 @@ else(OPESSL_EXE)
 endif(OPENSSL_EXE)
 
 add_executable(example_boost_server ${examples_boost_server_sources})
-target_link_libraries(example_boost_server asio_dtls)
+target_link_libraries(example_boost_server asio_dtls Boost::regex)
