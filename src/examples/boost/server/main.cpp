@@ -36,7 +36,7 @@ public:
     typedef std::vector<char> buffer_type;
     typedef boost::asio::detail::shared_ptr<buffer_type> buffer_ptr;
 
-    DTLS_Server(boost::asio::execution_context &serv,
+    DTLS_Server(boost::asio::io_context &serv,
                 boost::asio::ssl::dtls::context &ctx,
                 typename DatagramSocketType::endpoint_type &ep)
         : m_acceptor(serv, ep)
@@ -156,7 +156,7 @@ int main()
     }
     catch (std::exception &ex)
     {
-        std::cout << "Error: " << ex.what() << std::endl;
+        std::cerr << "Error: " << ex.what() << std::endl;
     }
 
     return 0;
