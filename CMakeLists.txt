@@ -58,8 +58,9 @@ endif(asio_build_dtls_shared)
 
 option(asio_dtls_use_boost "Use Boost::ASIO instead of ASIO" OFF)
 if(asio_dtls_use_boost)
-find_package(Boost 1.70 REQUIRED COMPONENTS system)
+find_package(Boost 1.70 REQUIRED COMPONENTS system date_time regex)
 target_compile_definitions(asio_dtls INTERFACE ASIO_DTLS_USE_BOOST)
+target_link_libraries(asio_dtls INTERFACE Boost::system Boost::date_time)
 endif(asio_dtls_use_boost)
 
 add_subdirectory(src)

@@ -10,6 +10,7 @@ find_program(
 if(OPENSSL_EXE)
     add_custom_command(
         OUTPUT privkey.pem cert.pem
+        COMMAND echo "Generating Server Certificates"
         COMMAND ${OPENSSL_EXE} genrsa -out privkey.pem
         COMMAND ${OPENSSL_EXE} req -new -x509 -key privkey.pem -out cert.pem -days 365 -subj "/C=DE/ST=Germyny/L=Balingen/O=Demo/OU=Testing/CN=localhost.localdomain"
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
@@ -19,4 +20,4 @@ else(OPESSL_EXE)
 endif(OPENSSL_EXE)
 
 add_executable(example_boost_server ${examples_boost_server_sources})
-target_link_libraries(example_boost_server asio_dtls Boost::system)
+target_link_libraries(example_boost_server asio_dtls)
