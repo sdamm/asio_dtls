@@ -148,7 +148,7 @@ public:
           next_layer_.lowest_layer().get_executor())
   {
     // set mtu to safe value to prevent dtls-fragmentation of the handshake
-    set_mtu(1500);
+    set_mtu(6000);
     core_.engine_.set_dtls_tmp_data(&remote_endpoint_tmp_);
   }
 #endif // defined(ASIO_DTLS_HAS_MOVE) || defined(GENERATING_DOCUMENTATION)
