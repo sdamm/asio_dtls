@@ -22,7 +22,7 @@ find_package(Threads)
 
 set(asio_header_dir "" CACHE PATH "Path to the asio library used.")
 add_library(asio INTERFACE)
-target_include_directories(asio INTERFACE asio_header_dir)
+target_include_directories(asio INTERFACE ${asio_header_dir})
 
 add_library(asio_dtls INTERFACE)
 target_include_directories(asio_dtls INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -61,6 +61,8 @@ if(asio_dtls_use_boost)
 find_package(Boost 1.70 REQUIRED COMPONENTS system date_time regex)
 target_compile_definitions(asio_dtls INTERFACE ASIO_DTLS_USE_BOOST)
 target_link_libraries(asio_dtls INTERFACE Boost::system Boost::date_time)
+else(asio_dtls_use_boost)
+target_link_libraries(asio_dtls INTERFACE asio)
 endif(asio_dtls_use_boost)
 
 add_subdirectory(src)
