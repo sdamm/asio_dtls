@@ -69,11 +69,24 @@ public:
             }
             else
             {
+                asio::error_code ec2;
+
                 auto callback =
                   [this, socket, buffer](const asio::error_code &ec, size_t)
                   {
                     handshake_completed(socket, ec);
                   };
+
+#if _WIN32
+                asio::ip::udp::endpoint localendpoint(m_acceptor.local_endpoint());
+                m_acceptor.close(ec2);
+                m_acceptor.open(localendpoint.protocol(), ec2);
+                asio::socket_base::reuse_address option(true);
+                m_acceptor.set_option(option, ec2);
+                m_acceptor.bind(localendpoint, ec2);
+
+                std::cout << "listen endpoint " << localendpoint << std::endl;
+#endif // _win32
 
                 socket->async_handshake(dtls_sock::server,
                                         asio::buffer(buffer->data(), size),
@@ -126,7 +139,22 @@ private:
         if(!ec)
         {
             std::cout << "Data sent, closing connection." << std::endl;
-            socket->async_shutdown([socket](const asio::error_code&){});
+
+#if _WIN32
+            socket->next_layer().close();
+#else // _WIN32
+            socket->async_shutdown([socket](const asio::error_code& ec){
+                if(ec)
+                {
+                    std::cout << "Failed closing the socket: " << ec.message() << std::endl;
+                }
+                else
+                {
+                    std::cout << "Shutdown complete." << std::endl;
+                    socket->next_layer().close();
+                }
+            });
+#endif // _WIN32
         }
     }
 
