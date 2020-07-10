@@ -44,6 +44,8 @@
 #include "asio/ssl/detail/openssl_types.hpp"
 #include "asio/ssl/detail/openssl_init.hpp"
 #include "asio/ssl/detail/password_callback.hpp"
+#include "asio/ssl/detail/psk_client_callback.hpp"
+#include "asio/ssl/detail/psk_server_callback.hpp"
 #include "asio/ssl/detail/verify_callback.hpp"
 #include "asio/ssl/verify_mode.hpp"
 
@@ -766,6 +768,21 @@ public:
   ASIO_DTLS_SYNC_OP_VOID set_password_callback(PasswordCallback callback,
       asio::error_code& ec);
 
+
+  template <typename PskClientCallback>
+  void set_psk_client_callback(PskClientCallback callback);
+
+  template <typename PskClientCallback>
+  ASIO_SYNC_OP_VOID set_psk_client_callback(PskClientCallback callback,
+      asio::error_code& ec);
+
+  template <typename PskServerCallback>
+  void set_psk_server_callback(PskServerCallback callback);
+
+  template <typename PskServerCallback>
+  ASIO_SYNC_OP_VOID set_psk_server_callback(PskServerCallback callback,
+      asio::error_code& ec);
+
 private:
   struct bio_cleanup;
   struct x509_cleanup;
@@ -788,6 +805,14 @@ private:
   // Callback used when the SSL implementation wants a password.
   ASIO_DTLS_DECL static int password_callback_function(
       char* buf, int size, int purpose, void* data);
+
+  // Helper function used to set a password callback.
+  ASIO_DECL ASIO_SYNC_OP_VOID do_set_psk_client_callback(
+      ssl::detail::psk_client_callback_base* callback, asio::error_code& ec);
+
+  // Helper function used to set a password callback.
+  ASIO_DECL ASIO_SYNC_OP_VOID do_set_psk_server_callback(
+      ssl::detail::psk_server_callback_base* callback, asio::error_code& ec);
 
   // Helper function to set the temporary Diffie-Hellman parameters from a BIO.
   ASIO_DTLS_DECL ASIO_DTLS_SYNC_OP_VOID do_use_tmp_dh(
