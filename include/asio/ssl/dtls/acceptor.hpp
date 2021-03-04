@@ -18,6 +18,7 @@
 #else  // ASIO_DTLS_USE_BOOST
 #include "asio/detail/push_options.hpp"
 
+#include "asio/executor.hpp"
 #include "asio/io_context.hpp"
 #include "asio/basic_socket.hpp"
 #include "asio/basic_io_object.hpp"
@@ -39,10 +40,29 @@ namespace asio {
 namespace ssl {
 namespace dtls {
 
-template <typename DatagramSocketType, typename Executor = executor>
+template <typename DatagramSocketType, typename Executor = any_io_executor>
 class acceptor;
 
-template <typename DatagramSocketType, typename Executor>
+/// Provides the ability to accept new connections.
+/**
+ * The basic_socket_acceptor class template is used for accepting new socket
+ * connections.
+ *
+ * @par Thread Safety
+ * @e Distinct @e objects: Safe.@n
+ * @e Shared @e objects: Unsafe.
+ *
+ * @par Example
+ * Opening a socket acceptor with the SO_REUSEADDR option enabled:
+ * @code
+ * asio::ip::tcp::acceptor acceptor(my_context);
+ * asio::ip::tcp::endpoint endpoint(asio::ip::tcp::v4(), port);
+ * acceptor.open(endpoint.protocol());
+ * acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
+ * acceptor.bind(endpoint);
+ * acceptor.listen();
+ * @endcode
+ */template <typename DatagramSocketType, typename Executor>
 class acceptor
 {
 public:
@@ -53,6 +73,48 @@ public:
 
   /// The type of the executor associated with the object.
   typedef Executor executor_type;
+
+  /// Rebinds the acceptor type to another executor.
+  template <typename Executor1>
+  struct rebind_executor
+  {
+    /// The socket type when rebound to the specified executor.
+    typedef acceptor<DatagramSocketType, Executor1> other;
+  };
+
+  /// Construct an acceptor without opening it.
+  /**
+   * This constructor creates an acceptor without opening it to listen for new
+   * connections. The open() function must be called before the acceptor can
+   * accept new socket connections.
+   *
+   * @param ex The I/O executor that the acceptor will use, by default, to
+   * dispatch handlers for any asynchronous operations performed on the
+   * acceptor.
+   */
+  explicit acceptor(const executor_type& ex)
+    : sock_(ex)
+  {
+  }
+
+  /// Construct an acceptor without opening it.
+  /**
+   * This constructor creates an acceptor without opening it to listen for new
+   * connections. The open() function must be called before the acceptor can
+   * accept new socket connections.
+   *
+   * @param context An execution context which provides the I/O executor that
+   * the socket will use, by default, to dispatch handlers for any asynchronous
+   * operations performed on the socket.
+   */
+  template <typename ExecutionContext>
+  explicit acceptor(ExecutionContext& context,
+      typename enable_if<
+        is_convertible<ExecutionContext&, execution_context&>::value
+      >::type* = 0)
+    : sock_<Protocol, Executor>(context)
+  {
+  }
 
   /// Construct an acceptor without opening it.
   /**
@@ -69,12 +131,12 @@ public:
       typename enable_if<
         is_convertible<ExecutionContext&, execution_context&>::value
       >::type* = 0)
-        : sock_(context)
-        , remoteEndPoint_()
-        , cookie_generate_callback_(nullptr)
-        , cookie_verify_callback_(nullptr)
+    : sock_(context)
+     , remoteEndPoint_()
+     , cookie_generate_callback_(nullptr)
+     , cookie_verify_callback_(nullptr)
   {
-	  sock_.open(ep.protocol());
+      sock_.open(ep.protocol());
   }
 
   explicit acceptor(const executor_type &ex, endpoint_type &ep)
@@ -97,7 +159,7 @@ public:
    *
    * @par Example
    * @code
-   * asio::ip::tcp::acceptor acceptor(executor);
+   * asio::ip::tcp::acceptor acceptor(my_context);
    * acceptor.open(asio::ip::tcp::v4());
    * @endcode
    */
@@ -119,7 +181,7 @@ public:
    *
    * @par Example
    * @code
-   * asio::ip::tcp::acceptor acceptor(executor);
+   * asio::ip::tcp::acceptor acceptor(my_context);
    * asio::error_code ec;
    * acceptor.open(asio::ip::tcp::v4(), ec);
    * if (ec)
@@ -129,7 +191,7 @@ public:
    * @endcode
    */
   ASIO_DTLS_SYNC_OP_VOID open(const protocol_type& protocol,
-                         asio::error_code& ec)
+      asio::error_code& ec)
   {
     sock_.open(protocol, ec);
     ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
@@ -147,7 +209,7 @@ public:
    *
    * @par Example
    * @code
-   * asio::ip::tcp::acceptor acceptor(io_context);
+   * asio::ip::tcp::acceptor acceptor(my_context);
    * asio::ip::tcp::endpoint endpoint(asio::ip::tcp::v4(), 12345);
    * acceptor.open(endpoint.protocol());
    * acceptor.bind(endpoint);
@@ -172,7 +234,7 @@ public:
    *
    * @par Example
    * @code
-   * asio::ip::tcp::acceptor acceptor(io_context);
+   * asio::ip::tcp::acceptor acceptor(my_context);
    * asio::ip::tcp::endpoint endpoint(asio::ip::tcp::v4(), 12345);
    * acceptor.open(endpoint.protocol());
    * asio::error_code ec;
@@ -184,7 +246,7 @@ public:
    * @endcode
    */
   ASIO_DTLS_SYNC_OP_VOID bind(const endpoint_type& endpoint,
-                         asio::error_code& ec)
+      asio::error_code& ec)
   {
     sock_.bind(endpoint, ec);
     ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
@@ -219,7 +281,7 @@ public:
    *
    * @par Example
    * @code
-   * asio::ip::tcp::acceptor acceptor(io_context);
+   * asio::ip::tcp::acceptor acceptor(my_context);
    * ...
    * asio::error_code ec;
    * acceptor.close(ec);
@@ -279,7 +341,7 @@ public:
    * @par Example
    * Setting the SOL_SOCKET/SO_REUSEADDR option:
    * @code
-   * asio::ip::tcp::acceptor acceptor(io_context);
+   * asio::ip::tcp::acceptor acceptor(my_context);
    * ...
    * asio::ip::tcp::acceptor::reuse_address option(true);
    * acceptor.set_option(option);
@@ -308,7 +370,7 @@ public:
    * @par Example
    * Setting the SOL_SOCKET/SO_REUSEADDR option:
    * @code
-   * asio::ip::tcp::acceptor acceptor(io_context);
+   * asio::ip::tcp::acceptor acceptor(my_context);
    * ...
    * asio::ip::tcp::acceptor::reuse_address option(true);
    * asio::error_code ec;
@@ -321,7 +383,7 @@ public:
    */
   template <typename SettableSocketOption>
   ASIO_DTLS_SYNC_OP_VOID set_option(const SettableSocketOption& option,
-                               asio::error_code& ec)
+      asio::error_code& ec)
   {
     sock_.set_option(option, ec);
     ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
@@ -342,7 +404,7 @@ public:
    * @par Example
    * Getting the value of the SOL_SOCKET/SO_REUSEADDR option:
    * @code
-   * asio::ip::tcp::acceptor acceptor(io_context);
+   * asio::ip::tcp::acceptor acceptor(my_context);
    * ...
    * asio::ip::tcp::acceptor::reuse_address option;
    * acceptor.get_option(option);
@@ -350,7 +412,7 @@ public:
    * @endcode
    */
   template <typename GettableSocketOption>
-  void get_option(GettableSocketOption& option)
+  void get_option(GettableSocketOption& option) const
   {
     asio::error_code ec;
     sock_.get_option(option, ec);
@@ -372,7 +434,7 @@ public:
    * @par Example
    * Getting the value of the SOL_SOCKET/SO_REUSEADDR option:
    * @code
-   * asio::ip::tcp::acceptor acceptor(io_context);
+   * asio::ip::tcp::acceptor acceptor(my_context);
    * ...
    * asio::ip::tcp::acceptor::reuse_address option;
    * asio::error_code ec;
@@ -386,7 +448,7 @@ public:
    */
   template <typename GettableSocketOption>
   ASIO_DTLS_SYNC_OP_VOID get_option(GettableSocketOption& option,
-                               asio::error_code& ec)
+      asio::error_code& ec) const
   {
     sock_.get_option(option, ec);
     ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
@@ -461,7 +523,7 @@ public:
    * @par Example
    * Getting the number of bytes ready to read:
    * @code
-   * asio::ip::tcp::acceptor acceptor(io_context);
+   * asio::ip::tcp::acceptor acceptor(my_context);
    * ...
    * asio::ip::tcp::acceptor::non_blocking_io command(true);
    * socket.io_control(command);
@@ -489,7 +551,7 @@ public:
    * @par Example
    * Getting the number of bytes ready to read:
    * @code
-   * asio::ip::tcp::acceptor acceptor(io_context);
+   * asio::ip::tcp::acceptor acceptor(my_context);
    * ...
    * asio::ip::tcp::acceptor::non_blocking_io command(true);
    * asio::error_code ec;
@@ -502,7 +564,7 @@ public:
    */
   template <typename IoControlCommand>
   ASIO_DTLS_SYNC_OP_VOID io_control(IoControlCommand& command,
-                               asio::error_code& ec)
+      asio::error_code& ec)
   {
     sock_.io_control(command, ec);
     ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
@@ -624,7 +686,7 @@ public:
       bool mode, asio::error_code& ec)
   {
     sock_.native_non_blocking(mode, ec);
-    ASIO_DTLS_SYNC_OP_VOID_RETURN(ec);
+    ASIO_SYNC_OP_VOID_RETURN(ec);
   }
 
   /// Get the local endpoint of the acceptor.
@@ -637,14 +699,17 @@ public:
    *
    * @par Example
    * @code
-   * asio::ip::tcp::acceptor acceptor(io_context);
+   * asio::ip::tcp::acceptor acceptor(my_context);
    * ...
    * asio::ip::tcp::endpoint endpoint = acceptor.local_endpoint();
    * @endcode
    */
   endpoint_type local_endpoint() const
   {
-    return sock_.local_endpoint();
+    asio::error_code ec;
+    endpoint_type ep = sock_.local_endpoint(ec);
+    asio::detail::throw_error(ec, "local_endpoint");
+    return ep;
   }
 
   /// Get the local endpoint of the acceptor.
@@ -659,7 +724,7 @@ public:
    *
    * @par Example
    * @code
-   * asio::ip::tcp::acceptor acceptor(io_context);
+   * asio::ip::tcp::acceptor acceptor(my_context);
    * ...
    * asio::error_code ec;
    * asio::ip::tcp::endpoint endpoint = acceptor.local_endpoint(ec);
@@ -673,6 +738,106 @@ public:
   {
     return sock_.local_endpoint(ec);
   }
+
+  /// Wait for the acceptor to become ready to read, ready to write, or to have
+  /// pending error conditions.
+  /**
+   * This function is used to perform a blocking wait for an acceptor to enter
+   * a ready to read, write or error condition state.
+   *
+   * @param w Specifies the desired acceptor state.
+   *
+   * @par Example
+   * Waiting for an acceptor to become readable.
+   * @code
+   * asio::ip::tcp::acceptor acceptor(my_context);
+   * ...
+   * acceptor.wait(asio::ip::tcp::acceptor::wait_read);
+   * @endcode
+   */
+  void wait(asio::socket_base::wait_type w)
+  {
+    asio::error_code ec;
+    sock_.wait(w, ec);
+    asio::detail::throw_error(ec, "wait");
+  }
+
+  /// Wait for the acceptor to become ready to read, ready to write, or to have
+  /// pending error conditions.
+  /**
+   * This function is used to perform a blocking wait for an acceptor to enter
+   * a ready to read, write or error condition state.
+   *
+   * @param w Specifies the desired acceptor state.
+   *
+   * @param ec Set to indicate what error occurred, if any.
+   *
+   * @par Example
+   * Waiting for an acceptor to become readable.
+   * @code
+   * asio::ip::tcp::acceptor acceptor(my_context);
+   * ...
+   * asio::error_code ec;
+   * acceptor.wait(asio::ip::tcp::acceptor::wait_read, ec);
+   * @endcode
+   */
+  ASIO_SYNC_OP_VOID wait(asio::socket_base::wait_type w, asio::error_code& ec)
+  {
+    sock_.wait(w, ec);
+    ASIO_SYNC_OP_VOID_RETURN(ec);
+  }
+
+  /// Asynchronously wait for the acceptor to become ready to read, ready to
+  /// write, or to have pending error conditions.
+  /**
+   * This function is used to perform an asynchronous wait for an acceptor to
+   * enter a ready to read, write or error condition state.
+   *
+   * @param w Specifies the desired acceptor state.
+   *
+   * @param handler The handler to be called when the wait operation completes.
+   * Copies will be made of the handler as required. The function signature of
+   * the handler must be:
+   * @code void handler(
+   *   const asio::error_code& error // Result of operation
+   * ); @endcode
+   * Regardless of whether the asynchronous operation completes immediately or
+   * not, the handler will not be invoked from within this function. On
+   * immediate completion, invocation of the handler will be performed in a
+   * manner equivalent to using asio::post().
+   *
+   * @par Example
+   * @code
+   * void wait_handler(const asio::error_code& error)
+   * {
+   *   if (!error)
+   *   {
+   *     // Wait succeeded.
+   *   }
+   * }
+   *
+   * ...
+   *
+   * asio::ip::tcp::acceptor acceptor(my_context);
+   * ...
+   * acceptor.async_wait(
+   *     asio::ip::tcp::acceptor::wait_read,
+   *     wait_handler);
+   * @endcode
+   */
+  template <
+      ASIO_COMPLETION_TOKEN_FOR(void (asio::error_code))
+        WaitHandler ASIO_DEFAULT_COMPLETION_TOKEN_TYPE(executor_type)>
+  ASIO_INITFN_AUTO_RESULT_TYPE(WaitHandler,
+      void (asio::error_code))
+  async_wait(asio::socket_base::wait_type w,
+      ASIO_DTLS_MOVE_ARG(WaitHandler) handler
+        ASIO_DEFAULT_COMPLETION_TOKEN(executor_type))
+  {
+    return async_initiate<WaitHandler, void (asio::error_code)>(
+        initiate_async_wait(this), handler, w);
+  }
+
 
   /// Accept a new connection.
   /**
@@ -688,9 +853,9 @@ public:
    *
    * @par Example
    * @code
-   * asio::ip::tcp::acceptor acceptor(io_context);
+   * asio::ip::tcp::acceptor acceptor(my_context);
    * ...
-   * asio::ip::tcp::socket socket(io_context);
+   * asio::ip::tcp::socket socket(my_context);
    * acceptor.accept(socket);
    * @endcode
    */
@@ -803,7 +968,7 @@ public:
     return init.result.get();
   }
 
-  executor_type get_executor() ASIO_DTLS_NOEXCEPT
+  executor_type get_executor()
   {
     return sock_.get_executor();
   }
@@ -839,7 +1004,7 @@ private:
                             buffer_,
                             ec, acceptor_.remoteEndPoint_))
         {
-          sock_.next_layer().open(acceptor_.sock_.local_endpoint().protocol());
+          sock_.next_layer().open(acceptor_.sock_.local_endpoint().protocol(), ec);
 
           asio::socket_base::reuse_address option(true);
           sock_.next_layer().set_option(option);
